@@ -1,0 +1,128 @@
+name: WeightMe
+options:
+  bundleIdPrefix: com.vladf1
+  deploymentTarget:
+    iOS: "27.0"
+  xcodeVersion: "27.2"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
+    SWIFT_APPROACHABLE_CONCURRENCY: YES
+    DEVELOPMENT_TEAM: 32R3YRS5WJ
+    CODE_SIGN_STYLE: Automatic
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    TARGETED_DEVICE_FAMILY: "1,2"
+    SUPPORTS_MACCATALYST: NO
+    SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
+    SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: NO
+
+targets:
+  WeightMe:
+    type: application
+    platform: iOS
+    sources:
+      - path: WeightMe
+      - path: Shared
+    dependencies:
+      - target: WeightMeWidgets
+        embed: true
+    info:
+      path: Config/WeightMe-Info.plist
+      properties:
+        CFBundleDisplayName: WeightMe
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        ITSAppUsesNonExemptEncryption: false
+        LSApplicationCategoryType: public.app-category.healthcare-fitness
+        NSHealthShareUsageDescription: WeightMe reads your weight history from Apple Health to chart it.
+        NSHealthUpdateUsageDescription: WeightMe saves the weights you log or import to Apple Health.
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: true
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        CFBundleURLTypes:
+          - CFBundleURLName: com.vladf1.WeightMe
+            CFBundleURLSchemes: [weightme]
+        LSSupportsOpeningDocumentsInPlace: false
+    entitlements:
+      path: Config/WeightMe.entitlements
+      properties:
+        com.apple.developer.healthkit: true
+        com.apple.developer.healthkit.access: []
+        com.apple.developer.healthkit.background-delivery: true
+        com.apple.security.application-groups:
+          - group.com.vladf1.weightme
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.vladf1.WeightMe
+        PRODUCT_NAME: WeightMe
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        ENABLE_PREVIEWS: YES
+
+  WeightMeWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: WeightMeWidgets
+      - path: Shared
+    info:
+      path: Config/WeightMeWidgets-Info.plist
+      properties:
+        CFBundleDisplayName: WeightMe
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: Config/WeightMeWidgets.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.vladf1.weightme
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.vladf1.WeightMe.Widgets
+        SKIP_INSTALL: YES
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME: WidgetBackground
+
+  WeightMeTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: WeightMeTests
+    dependencies:
+      - target: WeightMe
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.vladf1.WeightMeTests
+
+schemes:
+  WeightMe:
+    build:
+      targets:
+        WeightMe: all
+        WeightMeTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - WeightMeTests
+    archive:
+      config: Release

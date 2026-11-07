@@ -1,0 +1,67 @@
+import SwiftUI
+
+@main
+struct WeightMeApp: App {
+    @State private var settings: AppSettings
+    @State private var store: WeightStore
+    @State private var router = AppRouter()
+
+    init() {
+        let arguments = ProcessInfo.processInfo.arguments
+        let isTesting = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+        let demo = arguments.contains("-demo") || isTesting
+        let settings = AppSettings()
+        let store = WeightStore(settings: settings, mode: demo ? .demo : .health)
+        _settings = State(initialValue: settings)
+        _store = State(initialValue: store)
+        if !demo {
+            // Keeps the widget current when another app (e.g. a smart scale) writes a weight.
+            HealthService.shared.enableBackgroundDelivery { await store.refreshOnce() }
+        }
+        AppDependencies.shared.store = store
+        AppDependencies.shared.settings = settings
+        AppDependencies.shared.router = router
+    }
+
+    var body: some Scene {
+        WindowGroup {
+            RootView()
+                .environment(settings)
+                .environment(store)
+                .environment(router)
+                .task { await store.start() }
+                .onOpenURL { router.handle($0) }
+        }
+    }
+}
+
+/// Lets App Intents (which run in the app process) reach the live app state.
+@MainActor
+final class AppDependencies {
+    static let shared = AppDependencies()
+    var store: WeightStore?
+    var settings: AppSettings?
+    var router: AppRouter?
+}
+
+enum AppTab: Hashable {
+    case chart, entries, settings
+}
+
+@Observable
+final class AppRouter {
+    var tab: AppTab = .chart
+    var isAddingEntry = false
+
+    func handle(_ url: URL) {
+        guard url.scheme == DeepLink.scheme else { return }
+        switch url.host() {
+        case "add":
+            isAddingEntry = true
+        case "entries":
+            tab = .entries
+        default:
+            tab = .chart
+        }
+    }
+}

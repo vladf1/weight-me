@@ -1,0 +1,98 @@
+import Foundation
+import Testing
+@testable import WeightMe
+
+@MainActor
+struct AnalyticsTests {
+    let calendar = Calendar.current
+    let start = Calendar.current.date(from: DateComponents(year: 2025, month: 1, day: 1, hour: 7))!
+
+    func day(_ n: Int, hour: Int = 7) -> Date {
+        calendar.date(byAdding: .day, value: n, to: calendar.date(bySettingHour: hour, minute: 0, second: 0, of: start)!)!
+    }
+
+    func entry(_ n: Int, _ kg: Double, hour: Int = 7) -> WeightEntry {
+        WeightEntry(date: day(n, hour: hour), kg: kg, sourceName: "t", sourceBundleID: "t", isOwn: false)
+    }
+
+    @Test func sameDayHandling() {
+        let entries = [entry(0, 80, hour: 7), entry(0, 82, hour: 21), entry(1, 79)]
+        #expect(Analytics.readings(from: entries, handling: .all).count == 3)
+        let avg = Analytics.readings(from: entries, handling: .average)
+        #expect(avg.map(\.kg) == [81, 79])
+        #expect(Analytics.readings(from: entries, handling: .first).map(\.kg) == [80, 79])
+        #expect(Analytics.readings(from: entries, handling: .lowest).map(\.kg) == [80, 79])
+    }
+
+    @Test func rollingAverageUsesTrailingWindow() {
+        let points = (0..<10).map { SeriesPoint(date: day($0), kg: Double($0)) }
+        let avg = Analytics.rollingAverage(points, days: 3)
+        #expect(avg.count == 10)
+        #expect(avg[0].kg == 0)
+        #expect(avg[1].kg == 0.5)
+        #expect(avg[5].kg == 4)          // mean of 3,4,5
+        #expect(Set(avg.map(\.segment)) == [0])
+    }
+
+    @Test func rollingAverageBreaksAcrossLongGaps() {
+        let points = [0, 1, 2, 40, 41].map { SeriesPoint(date: day($0), kg: 80) }
+        let avg = Analytics.rollingAverage(points, days: 7)
+        #expect(avg.map(\.segment) == [0, 0, 0, 1, 1])
+    }
+
+    @Test func trendMovesTenPercentPerDay() {
+        let points = [SeriesPoint(date: day(0), kg: 80), SeriesPoint(date: day(1), kg: 90)]
+        let trend = Analytics.smoothedTrend(points, smoothing: 0.1)
+        #expect(trend.count == 2)
+        #expect(abs(trend[1].kg - 81) < 1e-9)
+    }
+
+    @Test func trendInterpolatesGaps() {
+        // Two-day gap: interpolated day = 85, then 90. 80 → 80.5 → 81.45
+        let points = [SeriesPoint(date: day(0), kg: 80), SeriesPoint(date: day(2), kg: 90)]
+        let trend = Analytics.smoothedTrend(points, smoothing: 0.1)
+        #expect(abs(trend[1].kg - 81.45) < 1e-9)
+    }
+
+    @Test func regressionRecoversSlope() {
+        let points = (0..<30).map { SeriesPoint(date: day($0), kg: 100 - 0.1 * Double($0)) }
+        let line = Analytics.linearRegression(points)!
+        #expect(abs(line.slope + 0.1) < 1e-6)
+        let goalDate = line.date(reaching: 95, after: day(0))!
+        #expect(abs(goalDate.timeIntervalSince(day(50))) < 3700)  // within DST slop
+    }
+
+    @Test func statsForRange() {
+        let points = (0..<14).map { SeriesPoint(date: day($0), kg: 80 + Double($0 % 3)) }
+        let stats = Analytics.stats(readings: points, trend: points, in: day(0)...day(13))!
+        #expect(stats.count == 14)
+        #expect(stats.minimum.kg == 80)
+        #expect(stats.maximum.kg == 82)
+    }
+
+    @Test func sliceIsInclusive() {
+        let points = (0..<10).map { SeriesPoint(date: day($0), kg: 1) }
+        #expect(Analytics.slice(points, in: day(2)...day(4)).count == 3)
+        #expect(Analytics.slice(points, in: day(20)...day(30)).isEmpty)
+    }
+
+    @Test func projectionReachesGoal() {
+        let trend = (0..<40).map { SeriesPoint(date: day($0), kg: 90 - 0.1 * Double($0)) }
+        let projection = Projection.make(trend: trend, goalKg: 80, windowDays: 30)!
+        #expect(projection.reachesGoal)
+        #expect(projection.end.kg == 80)
+    }
+
+    @Test func niceAxisTicks() {
+        let scale = YAxisScale.make(minKg: WeightUnit.pounds.kilograms(from: 181.2),
+                                    maxKg: WeightUnit.pounds.kilograms(from: 188.9), unit: .pounds)
+        let ticksLb = scale.ticks.map { (WeightUnit.pounds.value(fromKilograms: $0) * 10).rounded() / 10 }
+        #expect(ticksLb.allSatisfy { $0.truncatingRemainder(dividingBy: 1) == 0 })
+        #expect(ticksLb.first! <= 181 && ticksLb.last! >= 189)
+    }
+
+    @Test func formatting() {
+        #expect(WeightUnit.pounds.formatDelta(-WeightUnit.pounds.kilograms(from: 2.14)) == "−2.1 lb")
+        #expect(WeightUnit.kilograms.format(80) == "80.0 kg")
+    }
+}
