@@ -62,6 +62,6 @@ nonisolated enum LocalStorage {
 nonisolated enum DeepLink {
     static let scheme = "weightme"
     static let addEntry = URL(string: "weightme://add")!
-    static let chart = URL(string: "weightme://chart")!
-    static let entries = URL(string: "weightme://entries")!
+    static let summary = URL(string: "weightme://summary")!
+    static let history = URL(string: "weightme://history")!
 }

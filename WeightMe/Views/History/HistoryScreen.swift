@@ -12,7 +12,7 @@ nonisolated struct EntryRow: Identifiable, Hashable, Sendable {
     var deltaSortValue: Double { deltaKg ?? 0 }
 }
 
-struct EntriesScreen: View {
+struct HistoryScreen: View {
     @Environment(WeightStore.self) private var store
     @Environment(AppSettings.self) private var settings
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -61,7 +61,7 @@ struct EntriesScreen: View {
                 list
             }
         }
-        .navigationTitle("Entries")
+        .navigationTitle("History")
         .searchable(text: $searchText, prompt: "Date, weight or source")
         .toolbar {
             ToolbarItem(placement: .primaryAction) { AddEntryButton() }

@@ -64,7 +64,7 @@ struct WeightWidgetView: View {
                 Text("Open WeightMe")
                     .font(.caption)
             }
-            .widgetURL(DeepLink.chart)
+            .widgetURL(DeepLink.summary)
         }
     }
 }

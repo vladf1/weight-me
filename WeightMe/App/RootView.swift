@@ -41,11 +41,11 @@ struct MainTabs: View {
     var body: some View {
         @Bindable var router = router
         TabView(selection: $router.tab) {
-            Tab("Graph", systemImage: "chart.xyaxis.line", value: AppTab.chart) {
-                NavigationStack { ChartScreen() }
+            Tab("Summary", systemImage: "scalemass", value: AppTab.summary) {
+                NavigationStack { SummaryScreen() }
             }
-            Tab("Entries", systemImage: "list.bullet.rectangle", value: AppTab.entries) {
-                NavigationStack { EntriesScreen() }
+            Tab("History", systemImage: "clock.arrow.circlepath", value: AppTab.history) {
+                NavigationStack { HistoryScreen() }
             }
             Tab("Settings", systemImage: "gearshape", value: AppTab.settings) {
                 NavigationStack { SettingsScreen() }

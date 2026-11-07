@@ -62,7 +62,7 @@ struct WidgetMediumView: View {
             .frame(width: 112, alignment: .leading)
             WidgetSparkline(snapshot: snapshot, showGoal: true, showReadings: true, showAxis: true)
         }
-        .widgetURL(DeepLink.chart)
+        .widgetURL(DeepLink.summary)
     }
 }
 

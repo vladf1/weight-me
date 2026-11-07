@@ -120,3 +120,32 @@ struct ProjectionGuardTests {
         #expect(Projection.make(trend: trend(days: 16), goalKg: 80, windowDays: 30) != nil)
     }
 }
+
+/// The weekly full re-check that catches deletions Health no longer reports.
+@MainActor
+struct FullResyncTests {
+    @Test func dueWeeklyOrWhenNeverDone() {
+        let now = Date(timeIntervalSince1970: 1_780_000_000)
+        #expect(WeightStore.isFullResyncDue(lastFullSync: nil, now: now))
+        #expect(!WeightStore.isFullResyncDue(lastFullSync: now.addingTimeInterval(-6 * 86_400), now: now))
+        #expect(WeightStore.isFullResyncDue(lastFullSync: now.addingTimeInterval(-8 * 86_400), now: now))
+        #expect(WeightStore.isFullResyncDue(lastFullSync: now.addingTimeInterval(86_400), now: now))  // clock went backwards
+    }
+
+    @Test func missedDeletionIsRemoved() {
+        let store = WeightStore(settings: AppSettings(), mode: .demo)
+        let cached = store.entries
+        let deletedElsewhere = cached[cached.count - 2]
+        let addedElsewhere = WeightEntry(date: .now, kg: 80, sourceName: "Scale", sourceBundleID: "scale", isOwn: false)
+        // What Health has now: one entry gone (its deletion record was purged), one new.
+        let health = cached.filter { $0.id != deletedElsewhere.id } + [addedElsewhere]
+
+        let removed = store.applyFullSnapshot(health, anchor: nil)
+
+        #expect(removed == 1)
+        #expect(!store.entries.contains { $0.id == deletedElsewhere.id })
+        #expect(store.entries.contains { $0.id == addedElsewhere.id })
+        #expect(store.entries.count == cached.count)
+        #expect(store.lastFullSync != nil)
+    }
+}

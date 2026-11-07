@@ -57,8 +57,8 @@ final class PerformanceUITests: XCTestCase {
         }
 
         timed("open Entries (all rows)", limit: 5) {
-            app.buttons["Entries"].firstMatch.tap()
-            XCTAssertTrue(app.navigationBars["Entries"].waitForExistence(timeout: 5))
+            app.buttons["History"].firstMatch.tap()
+            XCTAssertTrue(app.navigationBars["History"].waitForExistence(timeout: 5))
         }
         timed("scroll Entries", limit: 16) {
             for _ in 0..<4 { app.swipeUp(velocity: .fast) }

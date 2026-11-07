@@ -165,11 +165,14 @@ final class HealthFlowUITests: XCTestCase {
         if saveAnyway.waitForExistence(timeout: 2) { saveAnyway.tap() }
 
         // It should now be the latest reading.
-        XCTAssertTrue(app.staticTexts["123.4"].waitForExistence(timeout: 8))
+        let latest = app.textFields["quickLogField"]
+        XCTAssertTrue(latest.waitForExistence(timeout: 8))
+        XCTAssertTrue(NSPredicate(format: "value == '123.4'").evaluate(with: latest)
+                      || XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == '123.4'"), object: latest)], timeout: 8) == .completed)
         snapshot(app, "21-chart-after-log")
 
-        // Delete it from the Entries tab.
-        let entries = launch(["-tab", "entries"])
+        // Delete it from the History tab.
+        let entries = launch(["-tab", "history"])
         let row = entries.descendants(matching: .any)
             .matching(NSPredicate(format: "label BEGINSWITH '123.4 lb'")).firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: 8))

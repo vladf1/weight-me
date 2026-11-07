@@ -22,6 +22,8 @@ final class WeightStore {
     private(set) var status: Status = .loading
     private(set) var isSyncing = false
     private(set) var lastSync: Date?
+    /// When the whole history was last re-read from Health (see `fullResyncInterval`).
+    private(set) var lastFullSync: Date?
     private(set) var series = DerivedSeries.empty
     private(set) var importHistory: [ImportRecord] = []
 
@@ -98,10 +100,21 @@ final class WeightStore {
         streamTask?.cancel()
         isSyncing = true
         if entries.isEmpty { status = .loading } else { status = .ready }
+        let needsFullResync = anchor != nil && Self.isFullResyncDue(lastFullSync: lastFullSync)
         streamTask = Task { [weak self, health, anchor] in
+            var anchor = anchor
             do {
+                if needsFullResync {
+                    // Re-read everything, then follow changes from that point on.
+                    let full = try await health.changes(since: nil)
+                    guard let self else { return }
+                    self.applyFullSnapshot(full.added, anchor: full.anchor)
+                    anchor = full.anchor
+                }
+                var isInitialFullRead = anchor == nil   // the first batch from no anchor is everything
                 for try await changes in health.changeStream(since: anchor) {
                     guard let self else { return }
+                    if isInitialFullRead { self.lastFullSync = .now; isInitialFullRead = false }
                     self.apply(changes)
                 }
             } catch is CancellationError {
@@ -134,6 +147,36 @@ final class WeightStore {
         lastSync = .now
         status = .ready
         scheduleCacheSave()
+    }
+
+    // MARK: Full re-check
+
+    /// Health only keeps deletion records for a while, so an app that isn't opened for a long time can
+    /// miss a deletion made elsewhere (another app or device) and keep showing that weight. Re-reading
+    /// the whole history every so often fixes that. It's cheap: a few ms for years of data.
+    nonisolated static let fullResyncInterval: TimeInterval = 7 * 86_400
+
+    nonisolated static func isFullResyncDue(lastFullSync: Date?, now: Date = .now) -> Bool {
+        guard let lastFullSync else { return true }
+        return now.timeIntervalSince(lastFullSync) >= fullResyncInterval || lastFullSync > now
+    }
+
+    /// Replaces the mirror with a complete read of Health. Returns how many cached entries Health no
+    /// longer has (deletions we missed). Live changes that land after this resume from `anchor`, so
+    /// anything the snapshot raced with is re-delivered.
+    @discardableResult
+    func applyFullSnapshot(_ snapshot: [WeightEntry], anchor newAnchor: HKQueryAnchor?) -> Int {
+        let fresh = Dictionary(snapshot.map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
+        let removed = byID.keys.filter { fresh[$0] == nil }.count
+        byID = fresh
+        if let newAnchor { anchor = newAnchor }
+        lastFullSync = .now
+        rebuildSortedEntries()
+        #if DEBUG
+        print("[sync] full re-check: \(snapshot.count) entries, removed \(removed) stale")
+        #endif
+        if mode == .health { scheduleCacheSave() }
+        return removed
     }
 
     /// Forgets the local mirror and re-reads everything from Apple Health.
@@ -315,6 +358,7 @@ final class WeightStore {
         var version: Int
         var anchor: Data?
         var lastSync: Date?
+        var lastFullSync: Date?
         var entries: [WeightEntry]
     }
 
@@ -335,6 +379,7 @@ final class WeightStore {
             anchor = try? NSKeyedUnarchiver.unarchivedObject(ofClass: HKQueryAnchor.self, from: anchorData)
         }
         lastSync = cache.lastSync
+        lastFullSync = cache.lastFullSync
         let pending = byID   // anything logged (e.g. via Siri) while the cache was loading
         byID = Dictionary(sortedEntries.map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
         byID.merge(pending) { _, new in new }
@@ -349,7 +394,8 @@ final class WeightStore {
             try? await Task.sleep(for: .milliseconds(500))
             guard !Task.isCancelled, let self else { return }
             let anchorData = self.anchor.flatMap { try? NSKeyedArchiver.archivedData(withRootObject: $0, requiringSecureCoding: true) }
-            let cache = Cache(version: Cache.currentVersion, anchor: anchorData, lastSync: self.lastSync, entries: self.entries)
+            let cache = Cache(version: Cache.currentVersion, anchor: anchorData, lastSync: self.lastSync,
+                              lastFullSync: self.lastFullSync, entries: self.entries)
             guard let data = try? JSONEncoder().encode(cache) else { return }
             let url = Self.cacheURL
             await Task.detached(priority: .utility) { try? LocalStorage.write(data, to: url) }.value

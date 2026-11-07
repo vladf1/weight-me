@@ -16,7 +16,7 @@ A deliberately simple weight tracker for iPhone, iPad and iPhone Duo — a repla
   - Goal line and projected goal date from your recent trend
   - Press-and-hold to inspect any reading with the averages at that moment
   - "In View" stats that follow the visible range: change, weekly rate, low, high, average, count
-- **Entries table** — grouped list on iPhone, sortable multi-column table on iPad. Entries WeightMe wrote can be edited or deleted; entries from other apps are read-only (a HealthKit rule).
+- **History table** — grouped list on iPhone, sortable multi-column table on iPad. Entries WeightMe wrote can be edited or deleted; entries from other apps are read-only (a HealthKit rule).
 - **CSV export** — WeightMe's own format with exact timestamps, units and sources.
 - **CSV import** (Lose It! export or WeightMe export) built to be hard to get wrong:
   - never overwrites — any day already in Apple Health is skipped

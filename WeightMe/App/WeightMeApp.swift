@@ -50,12 +50,12 @@ final class AppDependencies {
 }
 
 enum AppTab: Hashable {
-    case chart, entries, settings
+    case summary, history, settings
 }
 
 @Observable
 final class AppRouter {
-    var tab: AppTab = .chart
+    var tab: AppTab = .summary
     var isAddingEntry = false
     var isImporting = false
     var isExporting = false
@@ -66,13 +66,13 @@ final class AppRouter {
     init() {
         #if DEBUG
         // Debug launch hooks so screens can be reached without tapping:
-        //   -tab entries|settings   -openImport /path/to/file.csv   -openAdd
+        //   -tab history|settings   -openImport /path/to/file.csv   -openAdd
         let args = ProcessInfo.processInfo.arguments
         func value(after flag: String) -> String? {
             args.firstIndex(of: flag).flatMap { args.indices.contains($0 + 1) ? args[$0 + 1] : nil }
         }
         switch value(after: "-tab") {
-        case "entries": tab = .entries
+        case "history", "entries": tab = .history
         case "settings": tab = .settings
         default: break
         }
@@ -92,12 +92,12 @@ final class AppRouter {
         switch url.host() {
         case "add":
             isAddingEntry = true
-        case "entries":
-            tab = .entries
+        case "history", "entries":
+            tab = .history
         case "settings":
             tab = .settings
         default:
-            tab = .chart
+            tab = .summary
         }
     }
 }

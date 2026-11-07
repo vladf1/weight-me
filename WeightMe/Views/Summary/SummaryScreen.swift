@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct ChartScreen: View {
+struct SummaryScreen: View {
     @Environment(WeightStore.self) private var store
     @Environment(AppSettings.self) private var settings
     @Environment(AppRouter.self) private var router
@@ -34,10 +34,6 @@ struct ChartScreen: View {
     }
 
     private var hasChart: Bool { !series.readings.isEmpty }
-
-    private var header: some View {
-        SummaryHeader(series: series, latest: store.latest, unit: settings.unit, isSyncing: store.isSyncing)
-    }
 
     /// Range picker, chart and legend — or a placeholder while the history loads.
     @ViewBuilder private func chartSection(height: @escaping (CGFloat) -> CGFloat) -> some View {
@@ -89,8 +85,7 @@ struct ChartScreen: View {
     private var compactLayout: some View {
         VStack(alignment: .leading, spacing: 16) {
             historyHint
-            header
-            QuickLogCard()
+            LatestWeightCard()
             chartSection { min(max($0 * 0.45, 260), 520) }
             if hasChart {
                 StatsPanel(stats: visibleStats, visibleRange: visibleRange, unit: settings.unit, columns: 2)
@@ -105,10 +100,7 @@ struct ChartScreen: View {
     private var mediumLayout: some View {
         VStack(alignment: .leading, spacing: 16) {
             historyHint
-            HStack(alignment: .top, spacing: 16) {
-                header.frame(maxWidth: .infinity)
-                QuickLogCard().frame(maxWidth: 380)
-            }
+            LatestWeightCard()
             chartSection { min(max($0 * 0.5, 340), 600) }
             if hasChart {
                 HStack(alignment: .top, spacing: 16) {
@@ -124,12 +116,11 @@ struct ChartScreen: View {
         HStack(alignment: .top, spacing: 24) {
             VStack(alignment: .leading, spacing: 16) {
                 historyHint
-                header
-                chartSection { max($0 - 290, 380) }
+                chartSection { max($0 - 200, 380) }
             }
             .frame(maxWidth: .infinity)
             VStack(spacing: 16) {
-                QuickLogCard()
+                LatestWeightCard()
                 if hasChart {
                     StatsPanel(stats: visibleStats, visibleRange: visibleRange, unit: settings.unit, columns: 2)
                     GoalCard(series: series, projection: projection, unit: settings.unit) { isEditingGoal = true }
