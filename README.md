@@ -29,7 +29,8 @@ A deliberately simple weight tracker for iPhone, iPad and iPhone Duo — a repla
 
 ## Requirements
 
-- Xcode 27.2+, iOS 27+
+- iOS / iPadOS 26+
+- Xcode 26 or newer (CI builds with the newest Xcode on GitHub's stable `macos-26` runner; local development works in Xcode 27)
 - [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`) if you change `project.yml`
 
 ## Building
@@ -75,7 +76,7 @@ skipped otherwise.
 
 ### Notes
 
-- **iOS 27 Health history scope**: when granting access, iOS 27 asks whether to share the past 30 days or all recorded
+- **iOS 27 Health history scope**: when granting access, iOS 27 (not 26) asks whether to share the past 30 days or all recorded
   data. WeightMe needs *All Recorded Data*; the onboarding says so and the chart shows a hint if it looks limited.
 - Entries from other apps (Lose It, scales…) are read-only: HealthKit only lets the app that wrote a sample delete it.
 

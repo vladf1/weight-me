@@ -64,7 +64,7 @@ struct ImportFlowView: View {
             .navigationTitle("Import CSV")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                if case .importing = phase {} else if case .finished = phase {} else {
+                if showsCancel {
                     ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 }
             }
@@ -77,6 +77,14 @@ struct ImportFlowView: View {
         .interactiveDismissDisabled(isImportingPhase)
         .onAppear {
             if let initialURL, case .intro = phase { load(initialURL) }
+        }
+    }
+
+    /// No Cancel while writing to Health or once finished (the finished screen has its own Done).
+    private var showsCancel: Bool {
+        switch phase {
+        case .importing, .finished: false
+        default: true
         }
     }
 

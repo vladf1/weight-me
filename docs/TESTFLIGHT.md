@@ -101,6 +101,9 @@ in the TestFlight app on your iPhone/iPad once you're in the internal group.
 - **External testers** need Beta App Review: fill in TestFlight › Test Information (beta description,
   feedback email, privacy policy URL).
 - **Yearly**: the distribution certificate and the profiles expire; replace the secrets.
+- **Build toolchain**: uploads are built with the newest Xcode on GitHub's stable `macos-26` runner
+  (Xcode 26.x, iOS 26 SDK). When Apple starts requiring the iOS 27 SDK for uploads (it usually raises
+  the minimum each spring), switch `runs-on` in both workflows to a runner image with Xcode 27.
 - **When granting Health access**, iOS 27 asks how much history to share; testers should pick
   *All Recorded Data* (the app's onboarding says so).
 

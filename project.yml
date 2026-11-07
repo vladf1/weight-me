@@ -2,7 +2,7 @@ name: WeightMe
 options:
   bundleIdPrefix: me.fridman
   deploymentTarget:
-    iOS: "27.0"
+    iOS: "26.0"
   xcodeVersion: "27.2"
   createIntermediateGroups: true
   groupSortPosition: top

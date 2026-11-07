@@ -18,8 +18,7 @@ concurrency:
 jobs:
   test:
     name: Build and unit tests
-    # The stable macOS 26 image only has Xcode 26; Xcode 27 is on the preview "xcode-27" image.
-    runs-on: xcode-27
+    runs-on: macos-26
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
