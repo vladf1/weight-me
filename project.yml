@@ -45,8 +45,8 @@ targets:
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         ITSAppUsesNonExemptEncryption: false
         LSApplicationCategoryType: public.app-category.healthcare-fitness
-        NSHealthShareUsageDescription: WeightMe reads your weight history from Apple Health to chart it.
-        NSHealthUpdateUsageDescription: WeightMe saves the weights you log or import to Apple Health.
+        NSHealthShareUsageDescription: WeightMe reads your weight to chart it.
+        NSHealthUpdateUsageDescription: WeightMe saves the weights you log.
         UILaunchScreen: {}
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: true
@@ -126,8 +126,8 @@ targets:
         WKApplication: true
         WKCompanionAppBundleIdentifier: me.fridman.weightme
         WKRunsIndependentlyOfCompanionApp: false
-        NSHealthShareUsageDescription: WeightMe shows your latest weight from Apple Health.
-        NSHealthUpdateUsageDescription: WeightMe saves the weights you log on your watch to Apple Health.
+        NSHealthShareUsageDescription: WeightMe reads your weight to show the latest.
+        NSHealthUpdateUsageDescription: WeightMe saves the weights you log.
     entitlements:
       path: Config/WeightMeWatch.entitlements
       properties:

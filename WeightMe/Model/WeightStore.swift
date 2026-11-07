@@ -31,6 +31,8 @@ final class WeightStore {
     @ObservationIgnored private var anchor: HKQueryAnchor?
     @ObservationIgnored private var streamTask: Task<Void, Never>?
     @ObservationIgnored private var saveTask: Task<Void, Never>?
+    @ObservationIgnored private var cacheLoadTask: Task<Void, Never>?
+    @ObservationIgnored private var seriesGeneration = 0
     @ObservationIgnored private let settings: AppSettings
 
     init(settings: AppSettings, mode: Mode = .health) {
@@ -53,7 +55,8 @@ final class WeightStore {
             #endif
             status = .ready
         } else {
-            loadCache()
+            // Read the on-disk mirror off the main thread so the first frame isn't blocked.
+            cacheLoadTask = Task { await self.loadCache() }
         }
     }
 
@@ -66,6 +69,7 @@ final class WeightStore {
         guard mode == .health else { return }
         guard health.isAvailable else { status = .unavailable; return }
         if let unit = await health.preferredUnit() { settings.healthUnit = unit }
+        await cacheLoadTask?.value
         if await health.needsAuthorizationPrompt() {
             status = .needsAuthorization
             return
@@ -85,7 +89,8 @@ final class WeightStore {
 
     /// Restarts the live query (e.g. after returning to the foreground or after an error).
     func resume() {
-        guard mode == .health, status != .needsAuthorization, status != .unavailable else { return }
+        guard mode == .health, status != .needsAuthorization, status != .unavailable,
+              cacheLoadTask == nil else { return }
         if streamTask == nil { startStreaming() }
     }
 
@@ -112,6 +117,7 @@ final class WeightStore {
     /// One-shot catch-up used by background delivery.
     func refreshOnce() async {
         guard mode == .health else { return }
+        await cacheLoadTask?.value
         do {
             apply(try await health.changes(since: anchor))
         } catch {
@@ -143,6 +149,7 @@ final class WeightStore {
     // MARK: Derived data
 
     func recomputeSeries() {
+        seriesGeneration += 1
         series = DerivedSeries(entries: entries, handling: settings.sameDay, smoothing: settings.trendSmoothing)
         writeWidgetSnapshot()
     }
@@ -153,8 +160,25 @@ final class WeightStore {
     }
 
     private func rebuildSortedEntries() {
-        entries = byID.values.sorted { $0.date == $1.date ? $0.id.uuidString < $1.id.uuidString : $0.date < $1.date }
+        entries = Self.sorted(byID.values)
         recomputeSeries()
+    }
+
+    nonisolated private static func sorted(_ values: some Sequence<WeightEntry>) -> [WeightEntry] {
+        values.sorted { $0.date == $1.date ? $0.id.uuidString < $1.id.uuidString : $0.date < $1.date }
+    }
+
+    /// Computes the chart series on a background thread; the latest weight shows before this finishes.
+    private func recomputeSeriesInBackground() async {
+        seriesGeneration += 1
+        let generation = seriesGeneration
+        let entries = entries, handling = settings.sameDay, smoothing = settings.trendSmoothing
+        let series = await Task.detached(priority: .userInitiated) {
+            DerivedSeries(entries: entries, handling: handling, smoothing: smoothing)
+        }.value
+        guard generation == seriesGeneration else { return }
+        self.series = series
+        writeWidgetSnapshot()
     }
 
     // MARK: Editing
@@ -286,7 +310,7 @@ final class WeightStore {
 
     // MARK: Cache
 
-    private struct Cache: Codable {
+    nonisolated private struct Cache: Codable, Sendable {
         static let currentVersion = 1
         var version: Int
         var anchor: Data?
@@ -297,16 +321,26 @@ final class WeightStore {
     /// Mirror of the Health data; excluded from backups (see `LocalStorage`).
     static var cacheURL: URL { LocalStorage.appDirectory.appending(path: "weight-cache.json") }
 
-    private func loadCache() {
-        guard let data = try? Data(contentsOf: Self.cacheURL),
-              let cache = try? JSONDecoder().decode(Cache.self, from: data),
-              cache.version == Cache.currentVersion else { return }
+    private func loadCache() async {
+        defer { cacheLoadTask = nil }
+        let url = Self.cacheURL
+        let loaded = await Task.detached(priority: .userInitiated) { () -> (Cache, [WeightEntry])? in
+            guard let data = try? Data(contentsOf: url),
+                  let cache = try? JSONDecoder().decode(Cache.self, from: data),
+                  cache.version == Cache.currentVersion else { return nil }
+            return (cache, Self.sorted(cache.entries))
+        }.value
+        guard let (cache, sortedEntries) = loaded else { return }
         if let anchorData = cache.anchor {
             anchor = try? NSKeyedUnarchiver.unarchivedObject(ofClass: HKQueryAnchor.self, from: anchorData)
         }
         lastSync = cache.lastSync
-        replaceAll(cache.entries)
+        let pending = byID   // anything logged (e.g. via Siri) while the cache was loading
+        byID = Dictionary(sortedEntries.map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
+        byID.merge(pending) { _, new in new }
+        entries = pending.isEmpty ? sortedEntries : Self.sorted(byID.values)
         if !entries.isEmpty { status = .ready }
+        await recomputeSeriesInBackground()
     }
 
     private func scheduleCacheSave() {
@@ -339,7 +373,7 @@ final class WeightStore {
 }
 
 /// All chart series derived from the raw entries. Recomputed only when data or analysis settings change.
-struct DerivedSeries {
+nonisolated struct DerivedSeries: Sendable {
     var readings: [SeriesPoint]
     var average7: [SeriesPoint]
     var average30: [SeriesPoint]

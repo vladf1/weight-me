@@ -140,6 +140,18 @@ nonisolated enum Analytics {
         return result
     }
 
+    /// Mean and count of the readings in the `days` calendar days ending on the day of the latest
+    /// reading — the same window as the last point of `rollingAverage`.
+    static func recentAverage(_ points: [SeriesPoint], days: Int,
+                              calendar: Calendar = .current) -> (kg: Double, count: Int)? {
+        guard let last = points.last else { return nil }
+        let end = calendar.startOfDay(for: last.date).addingTimeInterval(86_400)
+        let start = end.addingTimeInterval(-TimeInterval(days) * 86_400)
+        let window = points.reversed().prefix { $0.date >= start }
+        guard !window.isEmpty else { return nil }
+        return (window.reduce(0) { $0 + $1.kg } / Double(window.count), window.count)
+    }
+
     /// Exponentially smoothed trend in the style of The Hacker's Diet: each day the trend moves
     /// `smoothing` (default 10%) of the way toward that day's weight. Days without readings are
     /// linearly interpolated so gaps don't distort the smoothing; gaps longer than `maxGapDays`

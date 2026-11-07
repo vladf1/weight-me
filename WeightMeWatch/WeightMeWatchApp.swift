@@ -35,7 +35,7 @@ struct HomeView: View {
                         Image(systemName: "heart.text.square.fill")
                             .font(.largeTitle)
                             .foregroundStyle(.pink)
-                        Text("WeightMe keeps your weight in Apple Health.")
+                        Text("Allow Weight access to log from your watch.")
                             .multilineTextAlignment(.center)
                         Button("Connect Health") { Task { await model.connect() } }
                             .buttonStyle(.borderedProminent)

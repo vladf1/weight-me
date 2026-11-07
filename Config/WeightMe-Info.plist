@@ -38,9 +38,9 @@
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<false/>
 	<key>NSHealthShareUsageDescription</key>
-	<string>WeightMe reads your weight history from Apple Health to chart it.</string>
+	<string>WeightMe reads your weight to chart it.</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>WeightMe saves the weights you log or import to Apple Health.</string>
+	<string>WeightMe saves the weights you log.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

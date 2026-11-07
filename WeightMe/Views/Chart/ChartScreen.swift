@@ -15,34 +15,42 @@ struct ChartScreen: View {
     private var series: DerivedSeries { store.series }
 
     var body: some View {
-        Group {
-            if store.entries.isEmpty {
-                emptyState
+        ScrollView {
+            if horizontalSizeClass != .regular {
+                compactLayout
+            } else if availableWidth >= 1000 {
+                regularLayout
             } else {
-                ScrollView {
-                    if horizontalSizeClass != .regular {
-                        compactLayout
-                    } else if availableWidth >= 1000 {
-                        regularLayout
-                    } else {
-                        mediumLayout
-                    }
-                }
-                .scrollBounceBehavior(.basedOnSize)
-                .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { availableWidth = $0 }
+                mediumLayout
             }
         }
-        .navigationTitle("Weight")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) { AddEntryButton() }
-            if store.isSyncing {
-                ToolbarItem(placement: .topBarLeading) { ProgressView().controlSize(.small) }
-            }
-        }
+        .scrollBounceBehavior(.basedOnSize)
+        .scrollDismissesKeyboard(.interactively)
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { availableWidth = $0 }
+        .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $isEditingGoal) { GoalEditorView() }
         .onAppear(perform: initializeViewportIfNeeded)
         .onChange(of: domain) { old, new in followLatestData(oldDomain: old, newDomain: new) }
+    }
+
+    private var hasChart: Bool { !series.readings.isEmpty }
+
+    private var header: some View {
+        SummaryHeader(series: series, latest: store.latest, unit: settings.unit, isSyncing: store.isSyncing)
+    }
+
+    /// Range picker, chart and legend — or a placeholder while the history loads.
+    @ViewBuilder private func chartSection(height: @escaping (CGFloat) -> CGFloat) -> some View {
+        if hasChart {
+            rangePicker
+            chart.containerRelativeFrame(.vertical) { h, _ in height(h) }
+            LayerChips()
+        } else if store.status == .loading || !store.entries.isEmpty {
+            ProgressView()
+                .frame(maxWidth: .infinity, minHeight: 240)
+        } else {
+            emptyState
+        }
     }
 
     // MARK: Layouts
@@ -81,14 +89,13 @@ struct ChartScreen: View {
     private var compactLayout: some View {
         VStack(alignment: .leading, spacing: 16) {
             historyHint
-            SummaryHeader(series: series, latest: store.latest, unit: settings.unit)
-            rangePicker
-            chart.containerRelativeFrame(.vertical) { height, _ in
-                min(max(height * 0.48, 260), 520)
+            header
+            QuickLogCard()
+            chartSection { min(max($0 * 0.45, 260), 520) }
+            if hasChart {
+                StatsPanel(stats: visibleStats, visibleRange: visibleRange, unit: settings.unit, columns: 2)
+                GoalCard(series: series, projection: projection, unit: settings.unit) { isEditingGoal = true }
             }
-            LayerChips()
-            StatsPanel(stats: visibleStats, visibleRange: visibleRange, unit: settings.unit, columns: 2)
-            GoalCard(series: series, projection: projection, unit: settings.unit) { isEditingGoal = true }
         }
         .padding()
     }
@@ -98,15 +105,16 @@ struct ChartScreen: View {
     private var mediumLayout: some View {
         VStack(alignment: .leading, spacing: 16) {
             historyHint
-            SummaryHeader(series: series, latest: store.latest, unit: settings.unit)
-            rangePicker
-            chart.containerRelativeFrame(.vertical) { height, _ in
-                min(max(height * 0.5, 340), 600)
-            }
-            LayerChips()
             HStack(alignment: .top, spacing: 16) {
-                StatsPanel(stats: visibleStats, visibleRange: visibleRange, unit: settings.unit, columns: 2)
-                GoalCard(series: series, projection: projection, unit: settings.unit) { isEditingGoal = true }
+                header.frame(maxWidth: .infinity)
+                QuickLogCard().frame(maxWidth: 380)
+            }
+            chartSection { min(max($0 * 0.5, 340), 600) }
+            if hasChart {
+                HStack(alignment: .top, spacing: 16) {
+                    StatsPanel(stats: visibleStats, visibleRange: visibleRange, unit: settings.unit, columns: 2)
+                    GoalCard(series: series, projection: projection, unit: settings.unit) { isEditingGoal = true }
+                }
             }
         }
         .padding(20)
@@ -116,17 +124,16 @@ struct ChartScreen: View {
         HStack(alignment: .top, spacing: 24) {
             VStack(alignment: .leading, spacing: 16) {
                 historyHint
-                SummaryHeader(series: series, latest: store.latest, unit: settings.unit)
-                rangePicker
-                chart.containerRelativeFrame(.vertical) { height, _ in
-                    max(height - 290, 380)
-                }
-                LayerChips()
+                header
+                chartSection { max($0 - 290, 380) }
             }
             .frame(maxWidth: .infinity)
             VStack(spacing: 16) {
-                StatsPanel(stats: visibleStats, visibleRange: visibleRange, unit: settings.unit, columns: 2)
-                GoalCard(series: series, projection: projection, unit: settings.unit) { isEditingGoal = true }
+                QuickLogCard()
+                if hasChart {
+                    StatsPanel(stats: visibleStats, visibleRange: visibleRange, unit: settings.unit, columns: 2)
+                    GoalCard(series: series, projection: projection, unit: settings.unit) { isEditingGoal = true }
+                }
             }
             .frame(width: 340)
         }
@@ -162,14 +169,7 @@ struct ChartScreen: View {
         ContentUnavailableView {
             Label("No Weight Data Yet", systemImage: "scalemass")
         } description: {
-            if store.status == .loading {
-                Text("Reading your history from Apple Health…")
-            } else {
-                Text("Log your first weight, import a CSV from Settings, or check that WeightMe can read Weight in Settings › Health › Data Access & Devices.")
-            }
-        } actions: {
-            Button("Log Weight") { router.isAddingEntry = true }
-                .buttonStyle(.borderedProminent)
+            Text("Log your first weight above, import a CSV from Settings, or check that WeightMe can read Weight in Settings › Health › Data Access & Devices.")
         }
     }
 

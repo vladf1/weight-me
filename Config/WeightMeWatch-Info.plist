@@ -21,9 +21,9 @@
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>WeightMe shows your latest weight from Apple Health.</string>
+	<string>WeightMe reads your weight to show the latest.</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>WeightMe saves the weights you log on your watch to Apple Health.</string>
+	<string>WeightMe saves the weights you log.</string>
 	<key>WKApplication</key>
 	<true/>
 	<key>WKCompanionAppBundleIdentifier</key>

@@ -14,12 +14,14 @@
 		17F929A4F2679722D4A43291 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9956902F19B482359F8673AA /* AppSettings.swift */; };
 		1E5307604E5607272E12351B /* AdaptiveStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9548F8B275ACF822EC9F71A3 /* AdaptiveStack.swift */; };
 		2D97A69B6C322800DD419AFD /* CSVImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 054E14622167A851FDC417B6 /* CSVImportTests.swift */; };
+		2FA6023BEE4887E970600489 /* QuickLogCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F528EB89565C2DDD9B3B2F2 /* QuickLogCard.swift */; };
 		315D28C30FB4BAB5496C495D /* HealthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E5942BDF65DA7229DE3E4EB /* HealthService.swift */; };
 		367D7541AF31694F24A7AA18 /* WeightUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69F8409B76827597228F9009 /* WeightUnit.swift */; };
 		367FEF8FC9D00A75D7CF8BF4 /* WeightMeWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D27D437AC4037DC1C54F142E /* WeightMeWatchApp.swift */; };
 		36FD39FDD084DAB381F44972 /* ChartInteractionUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B1397727D00272C56CBA4B8 /* ChartInteractionUITests.swift */; };
 		3AFB0B6C01838108AE314527 /* IntentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1E99AE479DEE4445E30DAC /* IntentTests.swift */; };
 		429DB25DA399862FFE65EBEC /* WeightWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AA8BEB2E090C85940CC933A /* WeightWidget.swift */; };
+		54F05CFDEF66E31BFD627222 /* QuickLogUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ACBD3BE216260A4B2AFCB1B /* QuickLogUITests.swift */; };
 		57C9A33B0C97870702D96556 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 38AF56C1A678D125A0877368 /* PrivacyInfo.xcprivacy */; };
 		58473CBAE8991F59D6D08424 /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68593E91510970DB4BEB9762 /* WidgetSnapshot.swift */; };
 		5F9548739E18CB524D21E602 /* ImportFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33C28DD66BEA3589D3AED03E /* ImportFlowView.swift */; };
@@ -136,6 +138,7 @@
 		2B2FA42292AAB88427CC07F5 /* ChartScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartScreen.swift; sourceTree = "<group>"; };
 		2BB52B0C2C807C60CD6F5E84 /* WidgetGalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetGalleryView.swift; sourceTree = "<group>"; };
 		2C002A600C4C5008AED4B382 /* WeightMeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightMeApp.swift; sourceTree = "<group>"; };
+		2F528EB89565C2DDD9B3B2F2 /* QuickLogCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLogCard.swift; sourceTree = "<group>"; };
 		3231DDA935B940AB52A3810E /* WeightEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightEntry.swift; sourceTree = "<group>"; };
 		33C28DD66BEA3589D3AED03E /* ImportFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportFlowView.swift; sourceTree = "<group>"; };
 		345FF8D0E987ED93FE4D3E55 /* EntryEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryEditorView.swift; sourceTree = "<group>"; };
@@ -160,6 +163,7 @@
 		8097A1C5E22D96E712EFA9F8 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		8520833706C65D5654D5A80F /* ChartPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartPalette.swift; sourceTree = "<group>"; };
 		8ABFE614941A200C64A250DD /* WeightMeUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = WeightMeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		8ACBD3BE216260A4B2AFCB1B /* QuickLogUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLogUITests.swift; sourceTree = "<group>"; };
 		9548F8B275ACF822EC9F71A3 /* AdaptiveStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdaptiveStack.swift; sourceTree = "<group>"; };
 		979805AA0506583DD72D860F /* WeightMeWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = WeightMeWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		9956902F19B482359F8673AA /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
@@ -251,6 +255,7 @@
 				8520833706C65D5654D5A80F /* ChartPalette.swift */,
 				0FAE28D8D38F3ACF18F110F1 /* ChartPanels.swift */,
 				2B2FA42292AAB88427CC07F5 /* ChartScreen.swift */,
+				2F528EB89565C2DDD9B3B2F2 /* QuickLogCard.swift */,
 				D7A3E33AC953CC03B4204594 /* WeightChartView.swift */,
 			);
 			path = Chart;
@@ -365,6 +370,7 @@
 				4B1397727D00272C56CBA4B8 /* ChartInteractionUITests.swift */,
 				4056814EFB9ED0A17A742A35 /* HealthFlowUITests.swift */,
 				504E6615158E36FABD24E46B /* PerformanceUITests.swift */,
+				8ACBD3BE216260A4B2AFCB1B /* QuickLogUITests.swift */,
 			);
 			path = WeightMeUITests;
 			sourceTree = "<group>";
@@ -664,6 +670,7 @@
 				315D28C30FB4BAB5496C495D /* HealthService.swift in Sources */,
 				5F9548739E18CB524D21E602 /* ImportFlowView.swift in Sources */,
 				6B86D3482EC7BBDB12B6DDCC /* OnboardingView.swift in Sources */,
+				2FA6023BEE4887E970600489 /* QuickLogCard.swift in Sources */,
 				8894E5F21B14BB7940EE3982 /* RootView.swift in Sources */,
 				046D6FB7247E771DDD63B8E6 /* SettingsScreen.swift in Sources */,
 				CF8C6DD693EE4754198EF518 /* SharedStorage.swift in Sources */,
@@ -688,6 +695,7 @@
 				36FD39FDD084DAB381F44972 /* ChartInteractionUITests.swift in Sources */,
 				6ECAD3C0FC8CF8072F33BEAA /* HealthFlowUITests.swift in Sources */,
 				E784DDDD7904527EF7B90A0E /* PerformanceUITests.swift in Sources */,
+				54F05CFDEF66E31BFD627222 /* QuickLogUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

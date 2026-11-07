@@ -173,13 +173,9 @@ struct EntryEditorView: View {
 
     private func attemptSave() {
         guard let kg = parsedKg, isValid else { return }
-        if let previous = previousEntry {
-            let change = abs(kg - previous.kg)
-            let days = abs(date.timeIntervalSince(previous.date)) / 86_400
-            if change > max(2.5, previous.kg * 0.03) && days < 10 {
-                confirmingLargeChange = true
-                return
-            }
+        if EntryCheck.isLargeChange(kg: kg, date: date, previous: previousEntry) {
+            confirmingLargeChange = true
+            return
         }
         save()
     }
@@ -213,6 +209,16 @@ struct EntryEditorView: View {
                 errorMessage = error.localizedDescription
             }
         }
+    }
+}
+
+/// Sanity check before saving: a big jump within a few days usually means the wrong unit or a typo.
+enum EntryCheck {
+    static func isLargeChange(kg: Double, date: Date, previous: WeightEntry?) -> Bool {
+        guard let previous else { return false }
+        let change = abs(kg - previous.kg)
+        let days = abs(date.timeIntervalSince(previous.date)) / 86_400
+        return change > max(2.5, previous.kg * 0.03) && days < 10
     }
 }
 

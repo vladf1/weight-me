@@ -40,6 +40,14 @@ struct AnalyticsTests {
         #expect(avg.map(\.segment) == [0, 0, 0, 1, 1])
     }
 
+    @Test func recentAverageMatchesRollingAverage() {
+        let points = [0, 3, 5, 6, 8, 12].map { SeriesPoint(date: day($0), kg: Double($0)) }
+        let recent = Analytics.recentAverage(points, days: 7)!
+        #expect(recent.count == 3)            // days 6, 8, 12 fall in the 7 days ending day 12
+        #expect(recent.kg == Analytics.rollingAverage(points, days: 7).last!.kg)
+        #expect(Analytics.recentAverage([], days: 7) == nil)
+    }
+
     @Test func trendMovesTenPercentPerDay() {
         let points = [SeriesPoint(date: day(0), kg: 80), SeriesPoint(date: day(1), kg: 90)]
         let trend = Analytics.smoothedTrend(points, smoothing: 0.1)
