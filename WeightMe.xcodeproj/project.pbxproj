@@ -34,6 +34,7 @@
 		8FEFE277E54B27B50DB0353C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 75FC3B40F8C6AF02A2AADEC6 /* Assets.xcassets */; };
 		96001D8B3DF56176A211CDF6 /* DemoData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FF44C9653880B0FDA726CAD /* DemoData.swift */; };
 		A1FB03A53B3CBD4003CF83AA /* WeightIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5381D6E75DC7C1F82A50D756 /* WeightIntents.swift */; };
+		B2AD2372F2596012E1AA8B56 /* BackupExclusionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DFE22A83B942BC8DD0E4681 /* BackupExclusionTests.swift */; };
 		B33347718FE005C6382D08BE /* EntryEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 345FF8D0E987ED93FE4D3E55 /* EntryEditorView.swift */; };
 		B880F58EF4DEA84527D59C81 /* EntriesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF54105CED6901B504FB09C1 /* EntriesScreen.swift */; };
 		BC2BF00C45A2D1E132C0BCCE /* WeightMeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C002A600C4C5008AED4B382 /* WeightMeApp.swift */; };
@@ -108,6 +109,7 @@
 		4E5942BDF65DA7229DE3E4EB /* HealthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthService.swift; sourceTree = "<group>"; };
 		5381D6E75DC7C1F82A50D756 /* WeightIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightIntents.swift; sourceTree = "<group>"; };
 		5419AC7F15424AFBD44BEAB1 /* WeightMe.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = WeightMe.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5DFE22A83B942BC8DD0E4681 /* BackupExclusionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupExclusionTests.swift; sourceTree = "<group>"; };
 		628139DC85477741939CFEA9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		68593E91510970DB4BEB9762 /* WidgetSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSnapshot.swift; sourceTree = "<group>"; };
 		69F8409B76827597228F9009 /* WeightUnit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightUnit.swift; sourceTree = "<group>"; };
@@ -241,6 +243,7 @@
 			isa = PBXGroup;
 			children = (
 				F8B13B1C3A1C9E89890C3CCD /* AnalyticsTests.swift */,
+				5DFE22A83B942BC8DD0E4681 /* BackupExclusionTests.swift */,
 				054E14622167A851FDC417B6 /* CSVImportTests.swift */,
 			);
 			path = WeightMeTests;
@@ -500,6 +503,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				686076B3B53B7A99DB3479DE /* AnalyticsTests.swift in Sources */,
+				B2AD2372F2596012E1AA8B56 /* BackupExclusionTests.swift in Sources */,
 				2D97A69B6C322800DD419AFD /* CSVImportTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

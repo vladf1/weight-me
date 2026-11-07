@@ -273,11 +273,8 @@ final class WeightStore {
         var entries: [WeightEntry]
     }
 
-    static var cacheURL: URL {
-        let dir = URL.applicationSupportDirectory
-        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        return dir.appending(path: "weight-cache.json")
-    }
+    /// Mirror of the Health data; excluded from backups (see `LocalStorage`).
+    static var cacheURL: URL { LocalStorage.appDirectory.appending(path: "weight-cache.json") }
 
     private func loadCache() {
         guard let data = try? Data(contentsOf: Self.cacheURL),
@@ -300,7 +297,7 @@ final class WeightStore {
             let cache = Cache(version: Cache.currentVersion, anchor: anchorData, lastSync: self.lastSync, entries: self.entries)
             guard let data = try? JSONEncoder().encode(cache) else { return }
             let url = Self.cacheURL
-            await Task.detached(priority: .utility) { try? data.write(to: url, options: .atomic) }.value
+            await Task.detached(priority: .utility) { try? LocalStorage.write(data, to: url) }.value
         }
     }
 
@@ -405,14 +402,31 @@ nonisolated struct ImportRecord: Codable, Identifiable, Hashable, Sendable {
     var lastDate: Date?
     var undoneAt: Date?
 
-    private static let key = "importHistory"
-
-    static func loadAll() -> [ImportRecord] {
-        guard let data = UserDefaults.standard.data(forKey: key) else { return [] }
-        return (try? JSONDecoder().decode([ImportRecord].self, from: data)) ?? []
-    }
+    static func loadAll() -> [ImportRecord] { PrivateData.load().importHistory }
 
     static func saveAll(_ records: [ImportRecord]) {
-        UserDefaults.standard.set(try? JSONEncoder().encode(records), forKey: key)
+        var data = PrivateData.load()
+        data.importHistory = records
+        data.save()
+    }
+}
+
+/// Health-related values the user creates (goal weight, import history). Kept in a non-backed-up file
+/// rather than UserDefaults, which is included in device backups. Display preferences stay in UserDefaults.
+nonisolated struct PrivateData: Codable, Sendable {
+    var goalKg: Double?
+    var importHistory: [ImportRecord] = []
+
+    static var url: URL { LocalStorage.appDirectory.appending(path: "private-data.json") }
+
+    static func load() -> PrivateData {
+        guard let data = try? Data(contentsOf: url),
+              let value = try? JSONDecoder().decode(PrivateData.self, from: data) else { return PrivateData() }
+        return value
+    }
+
+    func save() {
+        guard let data = try? JSONEncoder().encode(self) else { return }
+        try? LocalStorage.write(data, to: Self.url)
     }
 }

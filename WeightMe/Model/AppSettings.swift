@@ -22,7 +22,14 @@ final class AppSettings {
     var healthUnit: WeightUnit = Locale.current.measurementSystem == .us ? .pounds : .kilograms
 
     var unitPreference: UnitPreference { didSet { defaults.set(unitPreference.rawValue, forKey: Keys.unit) } }
-    var goalKg: Double? { didSet { defaults.set(goalKg, forKey: Keys.goal) } }
+    /// Health-related, so stored in the non-backed-up `PrivateData` file, not UserDefaults.
+    var goalKg: Double? {
+        didSet {
+            var data = PrivateData.load()
+            data.goalKg = goalKg
+            data.save()
+        }
+    }
     var sameDay: SameDayHandling { didSet { defaults.set(sameDay.rawValue, forKey: Keys.sameDay) } }
     /// Fraction the smoothed trend moves toward each day's weight (Hacker's Diet uses 0.1).
     var trendSmoothing: Double { didSet { defaults.set(trendSmoothing, forKey: Keys.smoothing) } }
@@ -46,7 +53,13 @@ final class AppSettings {
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         unitPreference = UnitPreference(rawValue: defaults.string(forKey: Keys.unit) ?? "") ?? .health
-        goalKg = defaults.object(forKey: Keys.goal) != nil ? defaults.double(forKey: Keys.goal) : nil
+        goalKg = PrivateData.load().goalKg
+        #if DEBUG
+        // `-goalKg 80` on the command line (screenshots) overrides it for one launch without saving.
+        if let override = defaults.volatileDomain(forName: UserDefaults.argumentDomain)[Keys.goal] as? String {
+            goalKg = Double(override)
+        }
+        #endif
         sameDay = SameDayHandling(rawValue: defaults.string(forKey: Keys.sameDay) ?? "") ?? .all
         trendSmoothing = defaults.object(forKey: Keys.smoothing) as? Double ?? 0.1
         projectionWindowDays = defaults.object(forKey: Keys.projectionWindow) as? Int ?? 30

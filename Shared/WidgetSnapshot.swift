@@ -34,7 +34,7 @@ nonisolated struct WidgetSnapshot: Codable, Sendable, Equatable {
     func save() throws {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
-        try encoder.encode(self).write(to: SharedStorage.snapshotURL, options: .atomic)
+        try LocalStorage.write(encoder.encode(self), to: SharedStorage.snapshotURL)
     }
 
     /// Plausible sample data for widget previews / gallery.
