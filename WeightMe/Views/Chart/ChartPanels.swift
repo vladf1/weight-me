@@ -17,6 +17,7 @@ struct ChangeBadge: View {
             if let suffix { Text("· \(suffix)").foregroundStyle(.secondary) }
         }
         .font(.caption.weight(.semibold).monospacedDigit())
+        .lineLimit(1)
         .foregroundStyle(color)
     }
 }

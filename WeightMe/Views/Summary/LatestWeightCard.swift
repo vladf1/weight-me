@@ -50,20 +50,11 @@ struct LatestWeightCard: View {
 
     var body: some View {
         VStack(spacing: 10) {
-            topRow
-                .frame(minHeight: 44, alignment: .top)
-
-            if isPickingDate && isEditing {
-                HStack {
-                    DatePicker("Date & Time", selection: Binding(get: { date }, set: { customDate = $0 }), in: ...Date.now)
-                        .labelsHidden()
-                    Spacer()
-                    if customDate != nil {
-                        Button("Now") { withAnimation(.snappy) { customDate = nil; isPickingDate = false } }
-                            .font(.subheadline)
-                    }
-                }
-                .transition(.opacity.combined(with: .move(edge: .top)))
+            // Both states are always laid out on top of each other, so the card is as tall as the
+            // taller one and nothing below moves when you start or stop editing.
+            ZStack(alignment: .topLeading) {
+                restingTopRow.visible(!isEditing)
+                editingTopRow.visible(isEditing)
             }
 
             number
@@ -78,8 +69,10 @@ struct LatestWeightCard: View {
                         range: displayRange)
                 .frame(height: 54)
 
-            bottom
-                .frame(minHeight: 50)
+            ZStack {
+                hint.visible(!isEditing)
+                buttons.visible(isEditing)
+            }
         }
         .padding()
         .background(.background.secondary, in: RoundedRectangle(cornerRadius: 16))
@@ -107,28 +100,36 @@ struct LatestWeightCard: View {
 
     // MARK: Pieces
 
-    /// At rest: where the latest came from, and the 7-day average. Editing: the change and the date.
-    @ViewBuilder private var topRow: some View {
-        if isEditing {
-            HStack(alignment: .firstTextBaseline) {
-                VStack(alignment: .leading, spacing: 3) {
-                    Text("NEW WEIGHT")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                    if let kg = parsedKg, isValid, let previous = previousEntry {
+    /// Editing: the change from your last reading (or what's wrong), and the date.
+    private var editingTopRow: some View {
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text("NEW WEIGHT")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                Group {
+                    if let errorMessage {
+                        Label(errorMessage, systemImage: "exclamationmark.triangle.fill").foregroundStyle(.red)
+                    } else if parsedValue != nil, !isValid {
+                        Text("Not a body weight in \(unit.name.lowercased())").foregroundStyle(.red)
+                    } else if let kg = parsedKg, let previous = previousEntry {
                         HStack(spacing: 4) {
                             ChangeBadge(kg: kg - previous.kg, unit: unit)
                             Text("vs. \(previous.date.formatted(.relative(presentation: .named)))")
                                 .foregroundStyle(.secondary)
                         }
-                        .font(.caption)
                     }
                 }
-                Spacer()
-                dateButton
+                .font(.caption)
+                .lineLimit(1)
             }
-            .transition(.opacity)
-        } else {
+            Spacer()
+            dateButton
+        }
+    }
+
+    /// At rest: where the latest came from, and the 7-day average.
+    private var restingTopRow: some View {
             AdaptiveStack(horizontalAlignment: .top, spacing: dynamicTypeSize.isAccessibilitySize ? 8 : nil) {
                 VStack(alignment: .leading, spacing: 3) {
                     HStack(spacing: 6) {
@@ -137,14 +138,18 @@ struct LatestWeightCard: View {
                     }
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
+                    // One line each, so this row's height never changes (see `visible`).
                     if showSaved {
-                        Label("Saved to Health", systemImage: "checkmark.circle.fill")
+                        Text("\(Image(systemName: "checkmark.circle.fill")) Saved to Health")
                             .font(.subheadline)
                             .foregroundStyle(.green)
+                            .lineLimit(1)
+                            .accessibilityLabel("Saved to Health")
                     } else if let latest {
                         Text("\(latest.date.formatted(.relative(presentation: .named))) · \(latest.sourceName)")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
+                            .lineLimit(1)
                     }
                 }
                 if !dynamicTypeSize.isAccessibilitySize { Spacer(minLength: 8) }
@@ -161,19 +166,19 @@ struct LatestWeightCard: View {
                                 .foregroundStyle(.secondary)
                         }
                         .font(.subheadline.monospacedDigit())
+                        .lineLimit(1)
+                        .layoutPriority(1)
                         if let change = change30 {
                             ChangeBadge(kg: change, unit: unit, suffix: "vs. 30 days ago")
                         }
                     }
                 }
             }
-            .transition(.opacity)
-        }
     }
 
     private var dateButton: some View {
         Button {
-            withAnimation(.snappy) { isPickingDate.toggle() }
+            isPickingDate = true
         } label: {
             HStack(spacing: 4) {
                 Text(customDate.map { $0.formatted(.dateTime.month(.abbreviated).day().hour().minute()) } ?? "Now")
@@ -188,6 +193,20 @@ struct LatestWeightCard: View {
         .controlSize(.small)
         .accessibilityLabel("Date and time")
         .accessibilityValue(customDate == nil ? "Now" : date.formatted())
+        .popover(isPresented: $isPickingDate) {
+            VStack(spacing: 12) {
+                DatePicker("Date & Time", selection: Binding(get: { date }, set: { customDate = $0 }), in: ...Date.now)
+                    .datePickerStyle(.graphical)
+                HStack {
+                    Button("Now") { customDate = nil; isPickingDate = false }
+                    Spacer()
+                    Button("Done") { isPickingDate = false }.fontWeight(.semibold)
+                }
+            }
+            .padding()
+            .frame(minWidth: 320)
+            .presentationCompactAdaptation(.popover)
+        }
     }
 
     private var number: some View {
@@ -214,47 +233,36 @@ struct LatestWeightCard: View {
                 .foregroundStyle(.secondary)
                 .fixedSize()
         }
-        .frame(maxWidth: .infinity)
+        // Fixed height: a focused text field is a little taller, which would nudge everything below.
+        .frame(maxWidth: .infinity, minHeight: 72, maxHeight: 72)
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .contentShape(Rectangle())
         .onTapGesture { fieldFocused = true }
     }
 
-    /// Hint at rest; Cancel / Save while editing.
-    @ViewBuilder private var bottom: some View {
-        if isEditing {
-            VStack(spacing: 6) {
-                if let errorMessage {
-                    Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
-                        .font(.caption).foregroundStyle(.red)
-                } else if parsedValue != nil, !isValid {
-                    Text("That doesn't look like a body weight in \(unit.name.lowercased()).")
-                        .font(.caption).foregroundStyle(.red)
-                }
-                HStack(spacing: 12) {
-                    Button(action: cancel) {
-                        Text("Cancel").font(.headline).frame(maxWidth: .infinity).padding(.vertical, 4)
-                    }
-                    .buttonStyle(.bordered)
-                    .accessibilityIdentifier("quickLogCancel")
-                    Button(action: attemptSave) {
-                        Text("Save").font(.headline).frame(maxWidth: .infinity).padding(.vertical, 4)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(!isValid || isSaving)
-                    .accessibilityLabel("Save weight")
-                    .accessibilityIdentifier("quickLogSave")
-                }
-                .controlSize(.large)
+    private var buttons: some View {
+        HStack(spacing: 12) {
+            Button(action: cancel) {
+                Text("Cancel").font(.headline).frame(maxWidth: .infinity).padding(.vertical, 4)
             }
-            .transition(.opacity.combined(with: .scale(scale: 0.96)))
-        } else {
-            Text(latest == nil ? "Drag the ruler or tap to enter your weight." : "Drag the ruler or tap the number to log a new weight.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .transition(.opacity)
+            .buttonStyle(.bordered)
+            .accessibilityIdentifier("quickLogCancel")
+            Button(action: attemptSave) {
+                Text("Save").font(.headline).frame(maxWidth: .infinity).padding(.vertical, 4)
+            }
+            .buttonStyle(.borderedProminent)
+            .disabled(!isValid || isSaving)
+            .accessibilityLabel("Save weight")
+            .accessibilityIdentifier("quickLogSave")
         }
+        .controlSize(.large)
+    }
+
+    private var hint: some View {
+        Text(latest == nil ? "Drag the ruler or tap to enter your weight." : "Drag the ruler or tap the number to log a new weight.")
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .multilineTextAlignment(.center)
     }
 
     // MARK: Actions
@@ -316,6 +324,16 @@ struct LatestWeightCard: View {
             }
             isSaving = false
         }
+    }
+}
+
+private extension View {
+    /// Keeps the view in the layout (so it still takes up space) but hides it from sight, taps and
+    /// VoiceOver when `isVisible` is false.
+    func visible(_ isVisible: Bool) -> some View {
+        opacity(isVisible ? 1 : 0)
+            .allowsHitTesting(isVisible)
+            .accessibilityHidden(!isVisible)
     }
 }
 
