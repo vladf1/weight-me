@@ -52,6 +52,33 @@ enum AppTab: Hashable {
 final class AppRouter {
     var tab: AppTab = .chart
     var isAddingEntry = false
+    var isImporting = false
+    var isExporting = false
+    /// File to open straight into the import review (debug hook / future "Open in WeightMe").
+    var pendingImportURL: URL?
+
+    init() {
+        #if DEBUG
+        // Debug launch hooks so screens can be reached without tapping:
+        //   -tab entries|settings   -openImport /path/to/file.csv   -openAdd
+        let args = ProcessInfo.processInfo.arguments
+        func value(after flag: String) -> String? {
+            args.firstIndex(of: flag).flatMap { args.indices.contains($0 + 1) ? args[$0 + 1] : nil }
+        }
+        switch value(after: "-tab") {
+        case "entries": tab = .entries
+        case "settings": tab = .settings
+        default: break
+        }
+        if let path = value(after: "-openImport") {
+            tab = .settings
+            pendingImportURL = path.hasPrefix("/") ? URL(fileURLWithPath: path) : URL.documentsDirectory.appending(path: path)
+            isImporting = true
+        }
+        if args.contains("-openAdd") { isAddingEntry = true }
+        if args.contains("-openExport") { tab = .settings; isExporting = true }
+        #endif
+    }
 
     func handle(_ url: URL) {
         guard url.scheme == DeepLink.scheme else { return }
@@ -60,6 +87,8 @@ final class AppRouter {
             isAddingEntry = true
         case "entries":
             tab = .entries
+        case "settings":
+            tab = .settings
         default:
             tab = .chart
         }

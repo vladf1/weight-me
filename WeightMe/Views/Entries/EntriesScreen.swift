@@ -221,7 +221,7 @@ struct SourceLabel: View {
     let entry: WeightEntry
     var body: some View {
         HStack(spacing: 4) {
-            Image(systemName: entry.isOwn ? (entry.importBatchID != nil ? "square.and.arrow.down" : "scalemass") : "lock")
+            Image(systemName: entry.isOwn ? (entry.importBatchID != nil ? "square.and.arrow.down" : "pencil") : "lock")
                 .imageScale(.small)
             Text(entry.sourceName)
         }

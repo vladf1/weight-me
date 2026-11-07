@@ -29,6 +29,7 @@ struct ChartScreen: View {
             }
         }
         .navigationTitle("Weight")
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .primaryAction) { AddEntryButton() }
             if store.isSyncing {
@@ -46,7 +47,9 @@ struct ChartScreen: View {
         VStack(alignment: .leading, spacing: 16) {
             SummaryHeader(series: series, latest: store.latest, unit: settings.unit)
             rangePicker
-            chart.frame(height: 340)
+            chart.containerRelativeFrame(.vertical) { height, _ in
+                min(max(height * 0.48, 260), 520)
+            }
             LayerChips()
             StatsPanel(stats: visibleStats, visibleRange: visibleRange, unit: settings.unit, columns: 2)
             GoalCard(series: series, projection: projection, unit: settings.unit) { isEditingGoal = true }
@@ -59,7 +62,9 @@ struct ChartScreen: View {
             VStack(alignment: .leading, spacing: 16) {
                 SummaryHeader(series: series, latest: store.latest, unit: settings.unit)
                 rangePicker
-                chart.frame(minHeight: 420, idealHeight: 520)
+                chart.containerRelativeFrame(.vertical) { height, _ in
+                    max(height - 290, 380)
+                }
                 LayerChips()
             }
             .frame(maxWidth: .infinity)
@@ -146,15 +151,24 @@ struct ChartScreen: View {
 
     private func select(_ range: ChartRange, anchorToEnd: Bool = false) {
         settings.chartRange = range
-        let currentEnd = visibleRange.upperBound
-        let atEnd = anchorToEnd || domain.upperBound.timeIntervalSince(currentEnd) < 2 * 86_400
-        let end = atEnd ? domain.upperBound : currentEnd
         guard let days = range.days else {
             viewport = ChartViewport(start: domain.lowerBound, length: nil)
             return
         }
         let length = TimeInterval(days) * 86_400
+        let currentEnd = visibleRange.upperBound
+        let atEnd = anchorToEnd || currentEnd >= latestDataDate
+        let end = atEnd ? preferredEnd(forLength: length) : currentEnd
         viewport = ChartViewport(start: max(domain.lowerBound, end.addingTimeInterval(-length)), length: length)
+    }
+
+    private var latestDataDate: Date { series.readings.last?.date ?? domain.upperBound }
+
+    /// Where the window should end when "showing the latest": just past the last reading, plus a little
+    /// room for the projection line when it's on (never so much that short ranges show empty future).
+    private func preferredEnd(forLength length: TimeInterval) -> Date {
+        let breathingRoom = settings.isVisible(.projection) && projection != nil ? length * 0.12 : 0
+        return min(domain.upperBound, latestDataDate.addingTimeInterval(max(86_400, breathingRoom)))
     }
 
     /// When new readings arrive and the chart was showing the latest data, keep showing the latest.
@@ -165,8 +179,8 @@ struct ChartScreen: View {
             return
         }
         let oldEnd = viewport.start.addingTimeInterval(length)
-        if oldDomain.upperBound.timeIntervalSince(oldEnd) < 2 * 86_400 {
-            viewport.start = max(newDomain.lowerBound, newDomain.upperBound.addingTimeInterval(-length))
+        if oldEnd.addingTimeInterval(3 * 86_400) >= latestDataDate {
+            viewport.start = max(newDomain.lowerBound, preferredEnd(forLength: length).addingTimeInterval(-length))
         }
     }
 

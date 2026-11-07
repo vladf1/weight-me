@@ -46,7 +46,7 @@ final class AppSettings {
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         unitPreference = UnitPreference(rawValue: defaults.string(forKey: Keys.unit) ?? "") ?? .health
-        goalKg = defaults.object(forKey: Keys.goal) as? Double
+        goalKg = defaults.object(forKey: Keys.goal) != nil ? defaults.double(forKey: Keys.goal) : nil
         sameDay = SameDayHandling(rawValue: defaults.string(forKey: Keys.sameDay) ?? "") ?? .all
         trendSmoothing = defaults.object(forKey: Keys.smoothing) as? Double ?? 0.1
         projectionWindowDays = defaults.object(forKey: Keys.projectionWindow) as? Int ?? 30

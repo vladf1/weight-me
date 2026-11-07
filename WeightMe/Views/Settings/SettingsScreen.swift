@@ -3,16 +3,16 @@ import SwiftUI
 struct SettingsScreen: View {
     @Environment(AppSettings.self) private var settings
     @Environment(WeightStore.self) private var store
+    @Environment(AppRouter.self) private var router
 
     @State private var isEditingGoal = false
-    @State private var isImporting = false
-    @State private var isExporting = false
     @State private var confirmingRebuild = false
     @State private var debugMessage: String?
     @State private var confirmingDeleteOwn = false
 
     var body: some View {
         @Bindable var settings = settings
+        @Bindable var router = router
         Form {
             Section("Units") {
                 Picker("Show weights in", selection: $settings.unitPreference) {
@@ -56,8 +56,8 @@ struct SettingsScreen: View {
             }
 
             Section {
-                Button("Export to CSV…", systemImage: "square.and.arrow.up") { isExporting = true }
-                Button("Import from CSV…", systemImage: "square.and.arrow.down") { isImporting = true }
+                Button("Export to CSV…", systemImage: "square.and.arrow.up") { router.isExporting = true }
+                Button("Import from CSV…", systemImage: "square.and.arrow.down") { router.isImporting = true }
                 NavigationLink {
                     ImportHistoryView()
                 } label: {
@@ -114,8 +114,11 @@ struct SettingsScreen: View {
         }
         .navigationTitle("Settings")
         .sheet(isPresented: $isEditingGoal) { GoalEditorView() }
-        .sheet(isPresented: $isImporting) { ImportFlowView() }
-        .sheet(isPresented: $isExporting) { ExportView() }
+        .sheet(isPresented: $router.isImporting, onDismiss: { router.pendingImportURL = nil }) {
+            ImportFlowView(initialURL: router.pendingImportURL)
+                .presentationSizing(.page)
+        }
+        .sheet(isPresented: $router.isExporting) { ExportView() }
         .confirmationDialog("Re-read everything from Apple Health?", isPresented: $confirmingRebuild, titleVisibility: .visible) {
             Button("Rebuild Cache") { store.rebuildCache() }
         } message: {

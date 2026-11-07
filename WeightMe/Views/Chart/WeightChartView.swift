@@ -85,7 +85,7 @@ struct WeightChartView: View {
                             yStart: .value("Low", month.minKg),
                             yEnd: .value("High", month.maxKg),
                             width: .ratio(0.7))
-                        .foregroundStyle(ChartPalette.monthly.opacity(0.16))
+                        .foregroundStyle(ChartPalette.monthly.opacity(0.22))
                         .clipShape(RoundedRectangle(cornerRadius: 3))
                 }
             }
@@ -94,11 +94,6 @@ struct WeightChartView: View {
                 RuleMark(y: .value("Goal", goalKg))
                     .foregroundStyle(ChartPalette.goal.opacity(0.8))
                     .lineStyle(StrokeStyle(lineWidth: 1.5, dash: [6, 4]))
-                    .annotation(position: .top, alignment: .leading, spacing: 2) {
-                        Text("Goal \(unit.format(goalKg))")
-                            .font(.caption2.weight(.semibold))
-                            .foregroundStyle(ChartPalette.goal)
-                    }
             }
 
             if layers.contains(.readings) {
@@ -169,10 +164,12 @@ struct WeightChartView: View {
             }
         }
         .chartXAxis {
-            AxisMarks(values: .automatic(desiredCount: 5)) { _ in
+            AxisMarks(values: xAxisTickDates) { value in
                 AxisGridLine()
                 AxisTick()
-                AxisValueLabel(format: xAxisFormat, centered: false)
+                AxisValueLabel(centered: false) {
+                    if let date = value.as(Date.self) { Text(xAxisLabel(for: date)) }
+                }
             }
         }
         .chartScrollableAxes(isScrollable ? .horizontal : [])
@@ -184,6 +181,19 @@ struct WeightChartView: View {
             }
         ))
         .chartXSelection(value: $selectedDate)
+        .chartOverlay(alignment: .topLeading) { proxy in
+            // Goal label pinned to the visible left edge (a mark annotation would scroll off-screen).
+            if layers.contains(.goal), let goalKg, let y = proxy.position(forY: goalKg),
+               let plot = proxy.plotFrame.map({ _ in proxy.plotSize }), y >= 14, y <= plot.height {
+                Text("Goal \(unit.format(goalKg))")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(ChartPalette.goal)
+                    .padding(.horizontal, 4)
+                    .background(.background.opacity(0.8), in: Capsule())
+                    .offset(x: 4, y: y - 16)
+                    .allowsHitTesting(false)
+            }
+        }
         .animation(.snappy(duration: 0.25), value: yScale)
         .simultaneousGesture(magnifyGesture)
         .accessibilityLabel("Weight chart")
@@ -216,12 +226,57 @@ struct WeightChartView: View {
         }
     }
 
-    private var xAxisFormat: Date.FormatStyle {
-        let days = visibleLength / 86_400
-        if days <= 10 { return .dateTime.weekday(.abbreviated).day() }
-        if days <= 120 { return .dateTime.month(.abbreviated).day() }
-        if days <= 800 { return .dateTime.month(.abbreviated).year(.twoDigits) }
-        return .dateTime.year()
+    private var visibleDays: Double { visibleLength / 86_400 }
+
+    /// Calendar-aligned ticks (days, weeks, months, quarters, half-years or years depending on zoom),
+    /// generated only for the data window around the screen. Striding over the whole history makes
+    /// Swift Charts lay out thousands of axis marks and hang.
+    private var xAxisTickDates: [Date] {
+        let calendar = Calendar.current
+        let (component, count): (Calendar.Component, Int) = switch visibleDays {
+        case ...10: (.day, 1)
+        case ...45: (.weekOfYear, 1)
+        case ...200: (.month, 1)
+        case ...400: (.month, 3)
+        case ...800: (.month, 6)
+        case ...3000: (.year, 1)
+        default: (.year, 2)
+        }
+        let window = dataWindow
+        guard var tick = calendar.dateInterval(of: component == .weekOfYear ? .weekOfYear : (component == .day ? .day : (component == .month ? .month : .year)),
+                                               for: window.lowerBound)?.start else { return [] }
+        // Align multi-month / multi-year strides to calendar boundaries (Jan/Apr/Jul/Oct, even years…).
+        if count > 1 {
+            while true {
+                let unitValue = component == .month ? calendar.component(.month, from: tick) - 1 : calendar.component(.year, from: tick)
+                if unitValue % count == 0 { break }
+                tick = calendar.date(byAdding: component, value: 1, to: tick)!
+            }
+        }
+        var ticks: [Date] = []
+        while tick <= window.upperBound, ticks.count < 120 {
+            ticks.append(tick)
+            tick = calendar.date(byAdding: component, value: count, to: tick)!
+        }
+        return ticks
+    }
+
+    /// "Mon 3", "Mar 3", "Mar", "Jan ’26", "2026" — the year is only spelled out on January ticks.
+    private func xAxisLabel(for date: Date) -> String {
+        switch visibleDays {
+        case ...10:
+            return date.formatted(.dateTime.weekday(.abbreviated).day())
+        case ...45:
+            return date.formatted(.dateTime.month(.abbreviated).day())
+        case ...800:
+            let month = date.formatted(.dateTime.month(.abbreviated))
+            if Calendar.current.component(.month, from: date) == 1 {
+                return "\(month) ’\(date.formatted(.dateTime.year(.twoDigits)))"
+            }
+            return month
+        default:
+            return date.formatted(.dateTime.year())
+        }
     }
 
     private func computeYScale() -> YAxisScale {

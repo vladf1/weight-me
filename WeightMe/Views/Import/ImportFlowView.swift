@@ -6,6 +6,9 @@ import UniformTypeIdentifiers
 /// 1. explain → 2. pick file → 3. review every row (counts, chart, warnings, options) →
 /// 4. confirmation alert → 5. type the number of entries to confirm → 6. write, with undo afterward.
 struct ImportFlowView: View {
+    /// When set, skips the intro and opens this file straight into review.
+    var initialURL: URL? = nil
+
     @Environment(\.dismiss) private var dismiss
     @Environment(WeightStore.self) private var store
     @Environment(AppSettings.self) private var settings
@@ -72,6 +75,9 @@ struct ImportFlowView: View {
             }
         }
         .interactiveDismissDisabled(isImportingPhase)
+        .onAppear {
+            if let initialURL, case .intro = phase { load(initialURL) }
+        }
     }
 
     private var isImportingPhase: Bool {
@@ -135,16 +141,21 @@ struct ImportFlowView: View {
             parseError = error.localizedDescription
         case .success(let urls):
             guard let url = urls.first else { return }
-            let accessing = url.startAccessingSecurityScopedResource()
-            defer { if accessing { url.stopAccessingSecurityScopedResource() } }
-            do {
-                let data = try Data(contentsOf: url)
-                guard let text = CSV.decode(data) else { throw ImportParseError.unreadable }
-                let file = try WeightCSVImport.parse(text)
-                phase = .review(file, fileName: url.lastPathComponent)
-            } catch {
-                parseError = error.localizedDescription
-            }
+            load(url)
+        }
+    }
+
+    private func load(_ url: URL) {
+        parseError = nil
+        let accessing = url.startAccessingSecurityScopedResource()
+        defer { if accessing { url.stopAccessingSecurityScopedResource() } }
+        do {
+            let data = try Data(contentsOf: url)
+            guard let text = CSV.decode(data) else { throw ImportParseError.unreadable }
+            let file = try WeightCSVImport.parse(text)
+            phase = .review(file, fileName: url.lastPathComponent)
+        } catch {
+            parseError = error.localizedDescription
         }
     }
 
