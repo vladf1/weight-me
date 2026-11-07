@@ -4,6 +4,7 @@ import Foundation
 enum DemoData {
     /// `days` stretches the same shape over a longer history (e.g. 15 years for performance testing).
     static func entries(endingAt end: Date = .now, seed: UInt64 = 42, days: Int = 4 * 365 + 120) -> [WeightEntry] {
+        guard days > 0 else { return [] }
         var rng = SeededGenerator(seed: seed)
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: end)

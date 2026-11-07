@@ -2,7 +2,23 @@ import Foundation
 
 /// Minimal RFC 4180 CSV reading/writing (quoted fields, embedded commas/quotes/newlines, CRLF, BOM).
 nonisolated enum CSV {
-    static func parse(_ text: String) -> [[String]] {
+    /// Spreadsheet apps in many locales save "CSV" with semicolons (and decimal commas), or tabs.
+    /// The delimiter is whichever of , ; or tab appears most in the first line outside quotes.
+    static func detectDelimiter(_ text: String) -> Unicode.Scalar {
+        var counts: [Unicode.Scalar: Int] = [",": 0, ";": 0, "\t": 0]
+        var inQuotes = false
+        for c in text.unicodeScalars {
+            if c == "\"" { inQuotes.toggle(); continue }
+            if inQuotes { continue }
+            if c == "\n" || c == "\r" { break }
+            if counts[c] != nil { counts[c]! += 1 }
+        }
+        let best = counts.max { a, b in a.value == b.value ? a.key != "," : a.value < b.value }!
+        return best.value > 0 ? best.key : ","
+    }
+
+    static func parse(_ text: String, delimiter: Unicode.Scalar? = nil) -> [[String]] {
+        let delimiter = delimiter ?? detectDelimiter(text)
         var rows: [[String]] = []
         var row: [String] = []
         var field = ""
@@ -29,7 +45,7 @@ nonisolated enum CSV {
             } else {
                 switch c {
                 case "\"": inQuotes = true
-                case ",": endField()
+                case delimiter: endField()
                 case "\r":
                     if pending == "\n" { pending = iterator.next() }
                     endRow()

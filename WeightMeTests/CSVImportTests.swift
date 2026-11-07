@@ -132,3 +132,37 @@ struct ExportRoundTripTests {
         #expect(abs(firstKg - entries[0].kg) < 0.01 * WeightUnit.kilogramsPerPound)
     }
 }
+
+/// Files that went through Excel or Numbers before being imported.
+@MainActor
+struct SpreadsheetResaveTests {
+    @Test func semicolonFileWithDecimalCommas() throws {
+        let text = "Date;Weight;Last Updated;Deleted\r\n18.07.2011;\"107,4\";2011-07-18T12:00:00Z;FALSE\r\n19.07.2011;106,9;2011-07-19T12:00:00Z;FALSE\r\n"
+        let file = try WeightCSVImport.parse(text)
+        #expect(file.format == .loseIt)
+        #expect(file.rows.count == 2)
+        #expect(file.rows[0].value == 107.4)
+        #expect(file.rows[1].value == 106.9)
+        #expect(file.dateOrder == .dayFirst)
+        #expect(file.rows[1].components == DateComponents(year: 2011, month: 7, day: 19))
+    }
+
+    @Test func tabSeparatedFile() throws {
+        let file = try WeightCSVImport.parse("Date\tWeight\n7/18/11\t236.7\n")
+        #expect(file.rows.first?.value == 236.7)
+    }
+
+    @Test func commasStillWinWhenFieldsContainSemicolons() {
+        #expect(CSV.detectDelimiter("Date,Weight,Note\n1/2/12,200,\"a;b;c\"") == ",")
+        #expect(CSV.parse("a,\"x;y\",c")[0] == ["a", "x;y", "c"])
+    }
+
+    @Test func excelMidnightMeansDateOnly() throws {
+        let file = try WeightCSVImport.parse("Date,Weight\n7/18/2011 0:00,236.7\n2011-07-19 00:00:00,236.1\n7/20/2011 12:00 AM,235.9\n")
+        #expect(file.rows[0].components?.hour == nil)
+        #expect(file.rows[1].components?.hour == nil)
+        #expect(file.rows[2].components?.hour == 0)   // an explicit AM/PM time is kept
+        let plan = ImportPlan.build(file: file, unit: .pounds, defaultHour: 8, defaultMinute: 0, existing: [])
+        #expect(Calendar.current.component(.hour, from: try #require(plan.rows[0].date)) == 8)
+    }
+}

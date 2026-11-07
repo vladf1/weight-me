@@ -79,7 +79,7 @@ struct WeightChartView: View {
             .map { ($0, windowed(series.points(for: $0), maxCount: 500)) }
 
         Chart {
-            if layers.contains(.monthlyRange) {
+            if showsMonthlyRange {
                 ForEach(series.monthly) { month in
                     BarMark(x: .value("Month", month.month, unit: .month),
                             yStart: .value("Low", month.minKg),
@@ -241,6 +241,9 @@ struct WeightChartView: View {
 
     private var visibleDays: Double { visibleLength / 86_400 }
 
+    /// Month-wide bars only make sense when several months are on screen.
+    private var showsMonthlyRange: Bool { layers.contains(.monthlyRange) && visibleDays >= 90 }
+
     /// Calendar-aligned ticks (days, weeks, months, quarters, half-years or years depending on zoom),
     /// generated only for the data window around the screen. Striding over the whole history makes
     /// Swift Charts lay out thousands of axis marks and hang.
@@ -302,7 +305,7 @@ struct WeightChartView: View {
         for layer in layerList where layers.contains(layer) {
             include(Analytics.slice(series.points(for: layer), in: range))
         }
-        if layers.contains(.monthlyRange) {
+        if showsMonthlyRange {
             for m in series.monthly where range.contains(m.midMonth) { lo = min(lo, m.minKg); hi = max(hi, m.maxKg) }
         }
         if !lo.isFinite {

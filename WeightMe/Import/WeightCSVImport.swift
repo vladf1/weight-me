@@ -180,7 +180,12 @@ nonisolated enum WeightCSVImport {
         let isoLocal = /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?)?$/
         if let m = trimmed.wholeMatch(of: isoLocal) {
             var c = DateComponents(year: Int(m.1), month: Int(m.2), day: Int(m.3))
-            if let h = m.4, let mi = m.5 { c.hour = Int(h); c.minute = Int(mi); c.second = m.6.flatMap { Int($0) } ?? 0 }
+            if let h = m.4, let mi = m.5, let hour = Int(h), let minute = Int(mi) {
+                let second = m.6.flatMap { Int($0) } ?? 0
+                if !(hour == 0 && minute == 0 && second == 0) {   // spreadsheet midnight = date only
+                    c.hour = hour; c.minute = minute; c.second = second
+                }
+            }
             return valid(c) ? (c, nil) : (nil, nil)
         }
 
@@ -199,7 +204,11 @@ nonisolated enum WeightCSVImport {
                     if ampm == "pm", hour < 12 { hour += 12 }
                     if ampm == "am", hour == 12 { hour = 0 }
                 }
-                c.hour = hour; c.minute = minute; c.second = t.3.flatMap { Int($0) } ?? 0
+                // Excel writes date-only cells as "7/18/11 0:00": midnight without AM/PM means "no time".
+                let second = t.3.flatMap { Int($0) } ?? 0
+                if !(hour == 0 && minute == 0 && second == 0 && t.4 == nil) {
+                    c.hour = hour; c.minute = minute; c.second = second
+                }
             } else if !parts.rest.trimmingCharacters(in: .whitespaces).isEmpty {
                 return (nil, nil)
             }

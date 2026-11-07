@@ -259,7 +259,7 @@ enum Projection {
     static func make(trend: [SeriesPoint], goalKg: Double?, windowDays: Int) -> ProjectionLine? {
         guard let last = trend.last else { return nil }
         let window = Analytics.slice(trend, in: last.date.addingTimeInterval(-Double(windowDays) * 86_400)...last.date)
-        guard window.count >= 5, let line = Analytics.linearRegression(window) else { return nil }
+        guard hasEnoughHistory(window), let line = Analytics.linearRegression(window) else { return nil }
         let start = SeriesPoint(date: last.date, kg: last.kg)
         if let goalKg {
             let needed = goalKg - last.kg
@@ -279,11 +279,17 @@ enum Projection {
                               reachesGoal: false)
     }
 
+    /// A rate from less than two weeks of data is mostly water-weight noise.
+    private static func hasEnoughHistory(_ window: ArraySlice<SeriesPoint>) -> Bool {
+        guard let first = window.first, let last = window.last, window.count >= 5 else { return false }
+        return last.date.timeIntervalSince(first.date) >= 14 * 86_400
+    }
+
     /// Rate in kg/week over the projection window.
     static func weeklyRate(trend: [SeriesPoint], windowDays: Int) -> Double? {
         guard let last = trend.last else { return nil }
         let window = Analytics.slice(trend, in: last.date.addingTimeInterval(-Double(windowDays) * 86_400)...last.date)
-        guard window.count >= 5 else { return nil }
+        guard hasEnoughHistory(window) else { return nil }
         return Analytics.linearRegression(window).map { $0.slope * 7 }
     }
 }

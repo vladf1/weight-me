@@ -96,3 +96,19 @@ struct AnalyticsTests {
         #expect(WeightUnit.kilograms.format(80) == "80.0 kg")
     }
 }
+
+@MainActor
+struct ProjectionGuardTests {
+    func trend(days: Int) -> [SeriesPoint] {
+        (0..<days).map { SeriesPoint(date: Date(timeIntervalSince1970: 1_780_000_000 + Double($0) * 86_400), kg: 90 - 0.3 * Double($0)) }
+    }
+
+    @Test func noProjectionFromUnderTwoWeeks() {
+        #expect(Projection.make(trend: trend(days: 8), goalKg: 80, windowDays: 30) == nil)
+        #expect(Projection.weeklyRate(trend: trend(days: 8), windowDays: 30) == nil)
+    }
+
+    @Test func projectionAfterTwoWeeks() {
+        #expect(Projection.make(trend: trend(days: 16), goalKg: 80, windowDays: 30) != nil)
+    }
+}
