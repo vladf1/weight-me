@@ -140,11 +140,6 @@ struct WeightChartView: View {
                 RuleMark(x: .value("Selected", selection.date))
                     .foregroundStyle(Color.primary.opacity(0.25))
                     .lineStyle(StrokeStyle(lineWidth: 1))
-                    .annotation(position: .top, spacing: 4,
-                                overflowResolution: .init(x: .fit(to: .chart), y: .disabled)) {
-                        SelectionCallout(date: selection.date, readingKg: selection.kg, series: series,
-                                         layers: layers, unit: unit)
-                    }
                 PointMark(x: .value("Selected", selection.date), y: .value("Weight", selection.kg))
                     .symbolSize(90)
                     .foregroundStyle(Color.accentColor)
@@ -182,21 +177,38 @@ struct WeightChartView: View {
         ))
         .chartXSelection(value: $selectedDate)
         .chartOverlay(alignment: .topLeading) { proxy in
-            // Goal label pinned to the visible left edge (a mark annotation would scroll off-screen).
-            if layers.contains(.goal), let goalKg, let y = proxy.position(forY: goalKg),
-               let plot = proxy.plotFrame.map({ _ in proxy.plotSize }), y >= 14, y <= plot.height {
-                Text("Goal \(unit.format(goalKg))")
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(ChartPalette.goal)
-                    .padding(.horizontal, 4)
-                    .background(.background.opacity(0.8), in: Capsule())
-                    .offset(x: 4, y: y - 16)
-                    .allowsHitTesting(false)
+            // Overlays rather than mark annotations: scrollable charts clip annotations and a
+            // rule's leading annotation scrolls off-screen with the start of the data.
+            ZStack(alignment: .topLeading) {
+                if layers.contains(.goal), let goalKg, let y = proxy.position(forY: goalKg),
+                   y >= 14, y <= proxy.plotSize.height {
+                    Text("Goal \(unit.format(goalKg))")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(ChartPalette.goal)
+                        .padding(.horizontal, 4)
+                        .background(.background.opacity(0.8), in: Capsule())
+                        .offset(x: 4, y: y - 16)
+                }
+                if let selection, let x = proxy.position(forX: selection.date) {
+                    // Put the callout in the top corner away from the finger.
+                    let onRight = x < proxy.plotSize.width / 2
+                    HStack {
+                        if onRight { Spacer(minLength: 0) }
+                        SelectionCallout(date: selection.date, readingKg: selection.kg, series: series,
+                                         layers: layers, unit: unit)
+                        if !onRight { Spacer(minLength: 0) }
+                    }
+                    .frame(width: proxy.plotSize.width)
+                    .padding(6)
+                    .transition(.opacity)
+                }
             }
+            .allowsHitTesting(false)
         }
         .animation(.snappy(duration: 0.25), value: yScale)
         .simultaneousGesture(magnifyGesture)
         .accessibilityLabel("Weight chart")
+        .accessibilityIdentifier("weightChart")
     }
 
     // MARK: Pinch to zoom

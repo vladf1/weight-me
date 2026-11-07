@@ -45,11 +45,30 @@ Launch with the `-demo` argument to run on generated multi-year sample data with
 (useful in the simulator, whose Health store starts empty). In Debug builds, Settings › Developer can also seed the
 simulator's Health store with the same sample data.
 
+Other Debug-only launch arguments, handy for screenshots: `-tab entries|settings`, `-openAdd`, `-openExport`,
+`-openImport <file in Documents>`, `-widgetGallery` (renders every widget size in-app), `-selectDaysAgo N`
+(preselects a chart point), `-reseedHealth` (wipes and reseeds WeightMe's data in the simulator's Health store).
+Any setting can also be overridden from the command line, e.g. `-chartRange Y -goalKg 80 -chartLayers '(readings,trend,goal)'`.
+
 ### Tests
 
 ```sh
+# Unit tests: CSV parsing, Lose It import planning, analytics
 xcodebuild -project WeightMe.xcodeproj -scheme WeightMe -destination 'platform=iOS Simulator,name=iPhone 18 Pro' test
+
+# UI tests: real HealthKit end to end (permission sheet, seeding, import with every confirmation gate,
+# undo, log/delete) plus chart gestures. Use a dedicated simulator — they write Health data.
+xcodebuild -project WeightMe.xcodeproj -scheme WeightMeUITests -destination 'platform=iOS Simulator,name=iPhone 18 Pro' test
 ```
+
+The import UI test expects a Lose It-style `LoseIt-weights.csv` in the app's Documents folder on the simulator and is
+skipped otherwise.
+
+### Notes
+
+- **iOS 27 Health history scope**: when granting access, iOS 27 asks whether to share the past 30 days or all recorded
+  data. WeightMe needs *All Recorded Data*; the onboarding says so and the chart shows a hint if it looks limited.
+- Entries from other apps (Lose It, scales…) are read-only: HealthKit only lets the app that wrote a sample delete it.
 
 ## Layout
 

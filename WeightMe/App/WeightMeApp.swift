@@ -59,6 +59,7 @@ final class AppRouter {
     var isAddingEntry = false
     var isImporting = false
     var isExporting = false
+    var isShowingWidgetGallery = false
     /// File to open straight into the import review (debug hook / future "Open in WeightMe").
     var pendingImportURL: URL?
 
@@ -82,6 +83,7 @@ final class AppRouter {
         }
         if args.contains("-openAdd") { isAddingEntry = true }
         if args.contains("-openExport") { tab = .settings; isExporting = true }
+        if args.contains("-widgetGallery") { isShowingWidgetGallery = true }
         #endif
     }
 

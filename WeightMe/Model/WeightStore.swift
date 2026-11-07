@@ -309,7 +309,9 @@ final class WeightStore {
     private func writeWidgetSnapshot() {
         guard mode == .health || ProcessInfo.processInfo.arguments.contains("-demoWidgets") else { return }
         let snapshot = WidgetSnapshotBuilder.make(series: series, unit: settings.unit, goalKg: settings.goalKg)
-        if snapshot != WidgetSnapshot.load() {
+        var previous = WidgetSnapshot.load()
+        previous?.generatedAt = snapshot.generatedAt   // ignore the timestamp when comparing
+        if snapshot != previous {
             try? snapshot.save()
             WidgetCenter.shared.reloadAllTimelines()
         }

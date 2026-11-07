@@ -10,6 +10,7 @@ struct ChartScreen: View {
     @State private var viewportInitialized = false
     @State private var selectedDate: Date?
     @State private var isEditingGoal = false
+    @State private var availableWidth: CGFloat = 1024
 
     private var series: DerivedSeries { store.series }
 
@@ -19,13 +20,16 @@ struct ChartScreen: View {
                 emptyState
             } else {
                 ScrollView {
-                    if horizontalSizeClass == .regular {
+                    if horizontalSizeClass != .regular {
+                        compactLayout
+                    } else if availableWidth >= 1000 {
                         regularLayout
                     } else {
-                        compactLayout
+                        mediumLayout
                     }
                 }
                 .scrollBounceBehavior(.basedOnSize)
+                .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { availableWidth = $0 }
             }
         }
         .navigationTitle("Weight")
@@ -87,6 +91,25 @@ struct ChartScreen: View {
             GoalCard(series: series, projection: projection, unit: settings.unit) { isEditingGoal = true }
         }
         .padding()
+    }
+
+    /// Regular width but not wide (iPad mini, unfolded iPhone Duo, iPad split view):
+    /// full-width chart with the panels side by side underneath.
+    private var mediumLayout: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            historyHint
+            SummaryHeader(series: series, latest: store.latest, unit: settings.unit)
+            rangePicker
+            chart.containerRelativeFrame(.vertical) { height, _ in
+                min(max(height * 0.5, 340), 600)
+            }
+            LayerChips()
+            HStack(alignment: .top, spacing: 16) {
+                StatsPanel(stats: visibleStats, visibleRange: visibleRange, unit: settings.unit, columns: 2)
+                GoalCard(series: series, projection: projection, unit: settings.unit) { isEditingGoal = true }
+            }
+        }
+        .padding(20)
     }
 
     private var regularLayout: some View {
@@ -180,6 +203,13 @@ struct ChartScreen: View {
         guard !viewportInitialized, series.dateRange != nil else { return }
         viewportInitialized = true
         select(settings.chartRange, anchorToEnd: true)
+        #if DEBUG
+        // -selectDaysAgo N: preselect a point so the inspection callout can be screenshotted.
+        let args = ProcessInfo.processInfo.arguments
+        if let i = args.firstIndex(of: "-selectDaysAgo"), args.indices.contains(i + 1), let days = Double(args[i + 1]) {
+            selectedDate = Date.now.addingTimeInterval(-days * 86_400)
+        }
+        #endif
     }
 
     private func select(_ range: ChartRange, anchorToEnd: Bool = false) {

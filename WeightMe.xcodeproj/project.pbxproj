@@ -13,6 +13,7 @@
 		2D97A69B6C322800DD419AFD /* CSVImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 054E14622167A851FDC417B6 /* CSVImportTests.swift */; };
 		315D28C30FB4BAB5496C495D /* HealthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E5942BDF65DA7229DE3E4EB /* HealthService.swift */; };
 		367D7541AF31694F24A7AA18 /* WeightUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69F8409B76827597228F9009 /* WeightUnit.swift */; };
+		36FD39FDD084DAB381F44972 /* ChartInteractionUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B1397727D00272C56CBA4B8 /* ChartInteractionUITests.swift */; };
 		429DB25DA399862FFE65EBEC /* WeightWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AA8BEB2E090C85940CC933A /* WeightWidget.swift */; };
 		58473CBAE8991F59D6D08424 /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68593E91510970DB4BEB9762 /* WidgetSnapshot.swift */; };
 		5F9548739E18CB524D21E602 /* ImportFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33C28DD66BEA3589D3AED03E /* ImportFlowView.swift */; };
@@ -22,6 +23,7 @@
 		6ECAD3C0FC8CF8072F33BEAA /* HealthFlowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4056814EFB9ED0A17A742A35 /* HealthFlowUITests.swift */; };
 		70FF66526544ACEE2F805271 /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68593E91510970DB4BEB9762 /* WidgetSnapshot.swift */; };
 		76C1CDB5CBCDA9F9DD3D7557 /* WeightChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7A3E33AC953CC03B4204594 /* WeightChartView.swift */; };
+		7F82CEEA0EA673A619B38A01 /* WidgetGalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BB52B0C2C807C60CD6F5E84 /* WidgetGalleryView.swift */; };
 		80F83E86AD89DF15823EB63E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 628139DC85477741939CFEA9 /* Assets.xcassets */; };
 		838A63B830E79B22D5B0317B /* WeightStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADA3B3442036354B0EB9B66F /* WeightStore.swift */; };
 		83E318D78BC3B80ACE624FF2 /* WidgetSnapshotBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCABD3AB62DA923F623D74A2 /* WidgetSnapshotBuilder.swift */; };
@@ -39,6 +41,8 @@
 		CF8C6DD693EE4754198EF518 /* SharedStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D225292550B08B4F23509E0A /* SharedStorage.swift */; };
 		DC02AC14822F1FF4351F4916 /* SharedStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D225292550B08B4F23509E0A /* SharedStorage.swift */; };
 		E02243D835D1B15989EA5D21 /* CSVExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18139EB70FB6D2E9CF166568 /* CSVExport.swift */; };
+		E080779A22FF933B8877B84F /* WidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14CBC1D81486868CA98E859 /* WidgetViews.swift */; };
+		E28445EFA948C973B5863691 /* WidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14CBC1D81486868CA98E859 /* WidgetViews.swift */; };
 		E6F51BA74EAFC3A3EE8B56AB /* Analytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED573C2C6703281A5D4ED477 /* Analytics.swift */; };
 		E9A521A74D5DCD397DA72AFD /* WeightCSVImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21D694CA29B7C66CC5E2251F /* WeightCSVImport.swift */; };
 		FA35CB74AF642D1D88372898 /* WeightUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69F8409B76827597228F9009 /* WeightUnit.swift */; };
@@ -90,11 +94,13 @@
 		1AA8BEB2E090C85940CC933A /* WeightWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightWidget.swift; sourceTree = "<group>"; };
 		21D694CA29B7C66CC5E2251F /* WeightCSVImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightCSVImport.swift; sourceTree = "<group>"; };
 		2B2FA42292AAB88427CC07F5 /* ChartScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartScreen.swift; sourceTree = "<group>"; };
+		2BB52B0C2C807C60CD6F5E84 /* WidgetGalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetGalleryView.swift; sourceTree = "<group>"; };
 		2C002A600C4C5008AED4B382 /* WeightMeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightMeApp.swift; sourceTree = "<group>"; };
 		3231DDA935B940AB52A3810E /* WeightEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightEntry.swift; sourceTree = "<group>"; };
 		33C28DD66BEA3589D3AED03E /* ImportFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportFlowView.swift; sourceTree = "<group>"; };
 		345FF8D0E987ED93FE4D3E55 /* EntryEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryEditorView.swift; sourceTree = "<group>"; };
 		4056814EFB9ED0A17A742A35 /* HealthFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthFlowUITests.swift; sourceTree = "<group>"; };
+		4B1397727D00272C56CBA4B8 /* ChartInteractionUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartInteractionUITests.swift; sourceTree = "<group>"; };
 		4E5942BDF65DA7229DE3E4EB /* HealthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthService.swift; sourceTree = "<group>"; };
 		5381D6E75DC7C1F82A50D756 /* WeightIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightIntents.swift; sourceTree = "<group>"; };
 		5419AC7F15424AFBD44BEAB1 /* WeightMe.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = WeightMe.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -112,6 +118,7 @@
 		9FF44C9653880B0FDA726CAD /* DemoData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoData.swift; sourceTree = "<group>"; };
 		ADA3B3442036354B0EB9B66F /* WeightStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightStore.swift; sourceTree = "<group>"; };
 		AF54105CED6901B504FB09C1 /* EntriesScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntriesScreen.swift; sourceTree = "<group>"; };
+		B14CBC1D81486868CA98E859 /* WidgetViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetViews.swift; sourceTree = "<group>"; };
 		CCABD3AB62DA923F623D74A2 /* WidgetSnapshotBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSnapshotBuilder.swift; sourceTree = "<group>"; };
 		D225292550B08B4F23509E0A /* SharedStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedStorage.swift; sourceTree = "<group>"; };
 		D7A3E33AC953CC03B4204594 /* WeightChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightChartView.swift; sourceTree = "<group>"; };
@@ -135,6 +142,7 @@
 				D225292550B08B4F23509E0A /* SharedStorage.swift */,
 				69F8409B76827597228F9009 /* WeightUnit.swift */,
 				68593E91510970DB4BEB9762 /* WidgetSnapshot.swift */,
+				B14CBC1D81486868CA98E859 /* WidgetViews.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -173,6 +181,14 @@
 				345FF8D0E987ED93FE4D3E55 /* EntryEditorView.swift */,
 			);
 			path = Entry;
+			sourceTree = "<group>";
+		};
+		36923520627322A44C71DF5D /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				2BB52B0C2C807C60CD6F5E84 /* WidgetGalleryView.swift */,
+			);
+			path = Components;
 			sourceTree = "<group>";
 		};
 		36DF225D139412DE1083B562 /* Chart */ = {
@@ -256,6 +272,7 @@
 			isa = PBXGroup;
 			children = (
 				36DF225D139412DE1083B562 /* Chart */,
+				36923520627322A44C71DF5D /* Components */,
 				7D3B3BE01F3110AF3B21F034 /* Entries */,
 				2B9330EE28F096C5D745646A /* Entry */,
 				069EB1357F99C575BDC22676 /* Import */,
@@ -267,6 +284,7 @@
 		9718172479B77946CA6DDCC4 /* WeightMeUITests */ = {
 			isa = PBXGroup;
 			children = (
+				4B1397727D00272C56CBA4B8 /* ChartInteractionUITests.swift */,
 				4056814EFB9ED0A17A742A35 /* HealthFlowUITests.swift */,
 			);
 			path = WeightMeUITests;
@@ -505,8 +523,10 @@
 				BC2BF00C45A2D1E132C0BCCE /* WeightMeApp.swift in Sources */,
 				838A63B830E79B22D5B0317B /* WeightStore.swift in Sources */,
 				367D7541AF31694F24A7AA18 /* WeightUnit.swift in Sources */,
+				7F82CEEA0EA673A619B38A01 /* WidgetGalleryView.swift in Sources */,
 				70FF66526544ACEE2F805271 /* WidgetSnapshot.swift in Sources */,
 				83E318D78BC3B80ACE624FF2 /* WidgetSnapshotBuilder.swift in Sources */,
+				E080779A22FF933B8877B84F /* WidgetViews.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -514,6 +534,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				36FD39FDD084DAB381F44972 /* ChartInteractionUITests.swift in Sources */,
 				6ECAD3C0FC8CF8072F33BEAA /* HealthFlowUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -526,6 +547,7 @@
 				FA35CB74AF642D1D88372898 /* WeightUnit.swift in Sources */,
 				429DB25DA399862FFE65EBEC /* WeightWidget.swift in Sources */,
 				58473CBAE8991F59D6D08424 /* WidgetSnapshot.swift in Sources */,
+				E28445EFA948C973B5863691 /* WidgetViews.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

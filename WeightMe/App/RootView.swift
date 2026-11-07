@@ -22,6 +22,9 @@ struct RootView: View {
         .sheet(isPresented: $router.isAddingEntry) {
             EntryEditorView(mode: .add)
         }
+        #if DEBUG
+        .fullScreenCover(isPresented: $router.isShowingWidgetGallery) { WidgetGalleryView() }
+        #endif
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { store.resume() }
         }
