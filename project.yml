@@ -112,6 +112,20 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         PRODUCT_BUNDLE_IDENTIFIER: com.vladf1.WeightMeTests
 
+  WeightMeUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: WeightMeUITests
+    dependencies:
+      - target: WeightMe
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.vladf1.WeightMeUITests
+        TEST_TARGET_NAME: WeightMe
+        SWIFT_DEFAULT_ACTOR_ISOLATION: nonisolated
+
 schemes:
   WeightMe:
     build:
@@ -124,5 +138,14 @@ schemes:
       config: Debug
       targets:
         - WeightMeTests
+  WeightMeUITests:
+    build:
+      targets:
+        WeightMe: all
+        WeightMeUITests: [test]
+    test:
+      config: Debug
+      targets:
+        - WeightMeUITests
     archive:
       config: Release

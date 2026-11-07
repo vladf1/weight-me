@@ -233,8 +233,25 @@ final class WeightStore {
     }
 
     #if DEBUG
-    func seedSampleData() async throws {
-        let demo = DemoData.entries(endingAt: .now).filter { $0.sourceName != "WeightMe" }
+    enum SeedError: LocalizedError {
+        case alreadySeeded(Int)
+        var errorDescription: String? {
+            if case .alreadySeeded(let n) = self { return "Apple Health already has \(n) weights; not seeding again." }
+            return nil
+        }
+    }
+
+    /// Debug: wipe everything this app wrote, seed fresh sample data, and re-read it.
+    func reseedHealth() async {
+        _ = try? await health.deleteAllOwnSamples()
+        try? await seedSampleData(force: true)
+        rebuildCache()
+    }
+
+    func seedSampleData(force: Bool = false) async throws {
+        if !force, entries.count > 100 { throw SeedError.alreadySeeded(entries.count) }
+        // Leave today empty so logging a weight is visible as the newest point.
+        let demo = DemoData.entries(endingAt: .now).filter { !Calendar.current.isDateInToday($0.date) }
         let samples = demo.map { health.makeSample(kg: $0.kg, date: $0.date, metadata: [HKMetadataKeyWasUserEntered: false]) }
         for start in stride(from: 0, to: samples.count, by: 300) {
             try await health.save(Array(samples[start..<min(start + 300, samples.count)]))

@@ -343,7 +343,13 @@ struct ImportReviewView: View {
         }
         .alert("Add \(plan.importCount) entries to Apple Health?", isPresented: $showingFirstConfirmation) {
             Button("Cancel", role: .cancel) {}
-            Button("Continue") { showingFinalConfirmation = true }
+            Button("Continue") {
+                // Presenting a sheet while the alert is still dismissing is silently dropped.
+                Task {
+                    try? await Task.sleep(for: .milliseconds(450))
+                    showingFinalConfirmation = true
+                }
+            }
         } message: {
             Text(firstConfirmationMessage(plan))
         }
@@ -573,24 +579,29 @@ struct FinalImportConfirmation: View {
                 } footer: {
                     Text("You can undo this import later from Settings › Import History.")
                 }
-                Section {
-                    Button {
-                        onConfirm()
-                    } label: {
-                        Text("Add \(plan.importCount) Entries to Apple Health")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.orange)
-                    .disabled(!(matches && acknowledged))
+            }
+            .safeAreaInset(edge: .bottom) {
+                // Pinned above the keyboard so it's visible while typing the count.
+                Button {
+                    onConfirm()
+                } label: {
+                    Text("Add \(plan.importCount) Entries to Apple Health")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
                 }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .tint(.orange)
+                .disabled(!(matches && acknowledged))
+                .padding()
+                .background(.bar)
             }
             .navigationTitle("Confirm Import")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } } }
         }
-        .presentationDetents([.medium, .large])
+        .presentationDetents([.large])
         .interactiveDismissDisabled()
     }
 }

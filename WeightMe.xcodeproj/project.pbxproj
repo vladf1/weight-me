@@ -19,6 +19,7 @@
 		61EB9DAE7849ADD5DE58F786 /* WeightEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3231DDA935B940AB52A3810E /* WeightEntry.swift */; };
 		686076B3B53B7A99DB3479DE /* AnalyticsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8B13B1C3A1C9E89890C3CCD /* AnalyticsTests.swift */; };
 		6B86D3482EC7BBDB12B6DDCC /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3A0252E636D33B99B71B35 /* OnboardingView.swift */; };
+		6ECAD3C0FC8CF8072F33BEAA /* HealthFlowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4056814EFB9ED0A17A742A35 /* HealthFlowUITests.swift */; };
 		70FF66526544ACEE2F805271 /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68593E91510970DB4BEB9762 /* WidgetSnapshot.swift */; };
 		76C1CDB5CBCDA9F9DD3D7557 /* WeightChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7A3E33AC953CC03B4204594 /* WeightChartView.swift */; };
 		80F83E86AD89DF15823EB63E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 628139DC85477741939CFEA9 /* Assets.xcassets */; };
@@ -44,6 +45,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		275C71D7C96BE4D8A0115A60 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 74C1CBF33709996593B87239 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5A20DC3880F6CF40ED14B094;
+			remoteInfo = WeightMe;
+		};
 		A78BB5E3BD961EB3F64FB8B5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 74C1CBF33709996593B87239 /* Project object */;
@@ -86,6 +94,7 @@
 		3231DDA935B940AB52A3810E /* WeightEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightEntry.swift; sourceTree = "<group>"; };
 		33C28DD66BEA3589D3AED03E /* ImportFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportFlowView.swift; sourceTree = "<group>"; };
 		345FF8D0E987ED93FE4D3E55 /* EntryEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryEditorView.swift; sourceTree = "<group>"; };
+		4056814EFB9ED0A17A742A35 /* HealthFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthFlowUITests.swift; sourceTree = "<group>"; };
 		4E5942BDF65DA7229DE3E4EB /* HealthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthService.swift; sourceTree = "<group>"; };
 		5381D6E75DC7C1F82A50D756 /* WeightIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightIntents.swift; sourceTree = "<group>"; };
 		5419AC7F15424AFBD44BEAB1 /* WeightMe.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = WeightMe.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -97,6 +106,7 @@
 		75FC3B40F8C6AF02A2AADEC6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8097A1C5E22D96E712EFA9F8 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		8520833706C65D5654D5A80F /* ChartPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartPalette.swift; sourceTree = "<group>"; };
+		8ABFE614941A200C64A250DD /* WeightMeUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = WeightMeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		979805AA0506583DD72D860F /* WeightMeWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = WeightMeWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		9956902F19B482359F8673AA /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		9FF44C9653880B0FDA726CAD /* DemoData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoData.swift; sourceTree = "<group>"; };
@@ -135,6 +145,7 @@
 				09FF5117CEF4E5172E3E7005 /* Shared */,
 				AE90873ED494CDF9CABE5AAE /* WeightMe */,
 				6B4B0361D10B8FEABBA82666 /* WeightMeTests */,
+				9718172479B77946CA6DDCC4 /* WeightMeUITests */,
 				E7040376E21B65809831CA0E /* WeightMeWidgets */,
 				5AA387BDBB863901BAE99A38 /* Products */,
 			);
@@ -200,6 +211,7 @@
 			children = (
 				5419AC7F15424AFBD44BEAB1 /* WeightMe.app */,
 				700C900FCD38E90F80B81242 /* WeightMeTests.xctest */,
+				8ABFE614941A200C64A250DD /* WeightMeUITests.xctest */,
 				979805AA0506583DD72D860F /* WeightMeWidgets.appex */,
 			);
 			name = Products;
@@ -250,6 +262,14 @@
 				524AA8730EB72FA9F6D7AD08 /* Settings */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		9718172479B77946CA6DDCC4 /* WeightMeUITests */ = {
+			isa = PBXGroup;
+			children = (
+				4056814EFB9ED0A17A742A35 /* HealthFlowUITests.swift */,
+			);
+			path = WeightMeUITests;
 			sourceTree = "<group>";
 		};
 		A4A1B53BD359B6DC2498C78E /* Analytics */ = {
@@ -305,6 +325,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		5244DEB98C7F307665283457 /* WeightMeUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FA411ACD7F1477E67FD9B086 /* Build configuration list for PBXNativeTarget "WeightMeUITests" */;
+			buildPhases = (
+				9CFC994ECF64C1B8835DA1BD /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				2D625922AD44FB1811FE66EB /* PBXTargetDependency */,
+			);
+			name = WeightMeUITests;
+			packageProductDependencies = (
+			);
+			productName = WeightMeUITests;
+			productReference = 8ABFE614941A200C64A250DD /* WeightMeUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		5A20DC3880F6CF40ED14B094 /* WeightMe */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = E7D747C1F91EA519794D6637 /* Build configuration list for PBXNativeTarget "WeightMe" */;
@@ -370,6 +408,11 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 2720;
 				TargetAttributes = {
+					5244DEB98C7F307665283457 = {
+						DevelopmentTeam = 32R3YRS5WJ;
+						ProvisioningStyle = Automatic;
+						TestTargetID = 5A20DC3880F6CF40ED14B094;
+					};
 					5A20DC3880F6CF40ED14B094 = {
 						DevelopmentTeam = 32R3YRS5WJ;
 						ProvisioningStyle = Automatic;
@@ -401,6 +444,7 @@
 				5A20DC3880F6CF40ED14B094 /* WeightMe */,
 				C17D411FA080817A269D47E7 /* WeightMeWidgets */,
 				A825118414FF48C0381F8325 /* WeightMeTests */,
+				5244DEB98C7F307665283457 /* WeightMeUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -466,6 +510,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9CFC994ECF64C1B8835DA1BD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6ECAD3C0FC8CF8072F33BEAA /* HealthFlowUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D2D51E00289AB6C5BB6FA503 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -480,6 +532,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		2D625922AD44FB1811FE66EB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5A20DC3880F6CF40ED14B094 /* WeightMe */;
+			targetProxy = 275C71D7C96BE4D8A0115A60 /* PBXContainerItemProxy */;
+		};
 		81D1EEC867A4681C2F2C24A8 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 5A20DC3880F6CF40ED14B094 /* WeightMe */;
@@ -726,6 +783,24 @@
 			};
 			name = Debug;
 		};
+		AFBBD1FB930BCFB764A08120 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.vladf1.WeightMeUITests;
+				SDKROOT = iphoneos;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = WeightMe;
+			};
+			name = Debug;
+		};
 		DE9F635E1C6D4A3634446A1D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -745,6 +820,24 @@
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
+		};
+		DEE760D480419B0908F0F05A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.vladf1.WeightMeUITests;
+				SDKROOT = iphoneos;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = WeightMe;
+			};
+			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
@@ -781,6 +874,15 @@
 			buildConfigurations = (
 				DE9F635E1C6D4A3634446A1D /* Debug */,
 				01FB2A20BA08152F4BBC85CF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		FA411ACD7F1477E67FD9B086 /* Build configuration list for PBXNativeTarget "WeightMeUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AFBBD1FB930BCFB764A08120 /* Debug */,
+				DEE760D480419B0908F0F05A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

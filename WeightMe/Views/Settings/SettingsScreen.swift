@@ -71,7 +71,9 @@ struct SettingsScreen: View {
             }
 
             Section {
-                LabeledContent("Readings", value: store.entries.count.formatted())
+                LabeledContent("Readings") {
+                    Text(store.entries.count.formatted()).accessibilityIdentifier("readingsCount")
+                }
                 LabeledContent("Sources", value: store.sources.joined(separator: ", "))
                 if let lastSync = store.lastSync {
                     LabeledContent("Last synced") {

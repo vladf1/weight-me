@@ -48,9 +48,14 @@ struct OnboardingView: View {
                 .controlSize(.large)
                 .disabled(isConnecting)
 
-                Text("WeightMe asks to read and write **Weight** only.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+                VStack(spacing: 6) {
+                    Text("WeightMe asks to read and write **Weight** only.")
+                    Text("When asked how much data to share, choose **All Recorded Data** so your full history shows up.")
+                }
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: 420)
                 Spacer(minLength: 20)
             }
             .padding()

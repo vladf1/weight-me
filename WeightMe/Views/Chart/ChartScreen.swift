@@ -43,8 +43,40 @@ struct ChartScreen: View {
 
     // MARK: Layouts
 
+    /// iOS 27 lets people share only the last 30 days of Health history. If everything we can see
+    /// starts right around that cutoff, explain how to grant full history.
+    private var looksHistoryLimited: Bool {
+        guard store.mode == .health, !historyHintDismissed, let oldest = store.entries.first?.date else { return false }
+        let age = Date.now.timeIntervalSince(oldest) / 86_400
+        return age > 20 && age < 32
+    }
+
+    @AppStorage("historyHintDismissed") private var historyHintDismissed = false
+
+    @ViewBuilder private var historyHint: some View {
+        if looksHistoryLimited {
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "clock.badge.exclamationmark")
+                    .foregroundStyle(.orange)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Only seeing the last 30 days?").font(.subheadline.weight(.semibold))
+                    Text("Apple Health may be sharing limited history with WeightMe. To show everything: Settings › Health › Data Access & Devices › WeightMe › allow All Recorded Data.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+                Button("Dismiss", systemImage: "xmark") { historyHintDismissed = true }
+                    .labelStyle(.iconOnly)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(12)
+            .background(.orange.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
+        }
+    }
+
     private var compactLayout: some View {
         VStack(alignment: .leading, spacing: 16) {
+            historyHint
             SummaryHeader(series: series, latest: store.latest, unit: settings.unit)
             rangePicker
             chart.containerRelativeFrame(.vertical) { height, _ in
@@ -60,6 +92,7 @@ struct ChartScreen: View {
     private var regularLayout: some View {
         HStack(alignment: .top, spacing: 24) {
             VStack(alignment: .leading, spacing: 16) {
+                historyHint
                 SummaryHeader(series: series, latest: store.latest, unit: settings.unit)
                 rangePicker
                 chart.containerRelativeFrame(.vertical) { height, _ in
