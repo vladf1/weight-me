@@ -7,7 +7,8 @@ real, it skips the upload and says so in the run's summary.
 
 ## Already done in the repo
 
-- Bundle IDs `me.fridman.weightme` (app) and `me.fridman.weightme.widgets` (widget), app group
+- Bundle IDs `me.fridman.weightme` (app), `me.fridman.weightme.widgets` (widget) and
+  `me.fridman.weightme.watchkitapp` (Apple Watch app, installed automatically with the iPhone app), app group
   `group.me.fridman.weightme`, team `32R3YRS5WJ`.
 - Privacy manifests (`PrivacyInfo.xcprivacy`) in the app and the widget; `ITSAppUsesNonExemptEncryption`
   = NO (no export-compliance question per build); `healthkit` as a required device capability.
@@ -16,7 +17,7 @@ real, it skips the upload and says so in the run's summary.
 - Privacy policy: [PRIVACY.md](../PRIVACY.md) →
   `https://github.com/vladf1/weight-me/blob/main/PRIVACY.md`
 - CI (`.github/workflows/ci.yml`): build + unit tests on every push and pull request.
-- The seven secrets the upload needs exist in the repo as `STUB …` placeholders.
+- The eight secrets the upload needs exist in the repo as `STUB …` placeholders.
 
 ## One-time steps
 
@@ -30,16 +31,19 @@ Steps 1–3 work in a phone browser. Step 4 is easiest at the Mac.
    `group.me.fridman.weightme`).
 3. **+ › App IDs › App**: description `WeightMe Widgets`, bundle ID `me.fridman.weightme.widgets`.
    Capabilities: **App Groups** (same group).
+4. **+ › App IDs › App**: description `WeightMe Watch`, bundle ID `me.fridman.weightme.watchkitapp`.
+   Capabilities: **HealthKit**.
 
 ### 2. Profiles — same site › Profiles
 
-Create two **Distribution › App Store Connect** profiles, both using your existing **Apple Distribution**
+Create three **Distribution › App Store Connect** profiles, both using your existing **Apple Distribution**
 certificate (the one Sloppy Tanks' CI signs with):
 
 | App ID | Suggested name |
 | --- | --- |
 | `me.fridman.weightme` | `WeightMe App Store` |
 | `me.fridman.weightme.widgets` | `WeightMe Widgets App Store` |
+| `me.fridman.weightme.watchkitapp` | `WeightMe Watch App Store` |
 
 ### 3. App record — appstoreconnect.apple.com
 
@@ -66,6 +70,7 @@ come from wherever you keep the original files.
 | `NOTARY_API_ISSUER` | the issuer ID (App Store Connect › Users and Access › Integrations) |
 | `WEIGHTME_APP_STORE_PROFILE` | base64 of the `WeightMe App Store` profile |
 | `WEIGHTME_WIDGET_APP_STORE_PROFILE` | base64 of the `WeightMe Widgets App Store` profile |
+| `WEIGHTME_WATCH_APP_STORE_PROFILE` | base64 of the `WeightMe Watch App Store` profile |
 
 The script does the base64 and `gh secret set` for you:
 

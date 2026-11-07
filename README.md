@@ -25,6 +25,8 @@ A deliberately simple weight tracker for iPhone, iPad and iPhone Duo — a repla
   - confirm in an alert, then type the number of entries to confirm
   - every import can be undone later as a unit (Settings › Import History)
 - **Widgets** — Home Screen (small/medium) and Lock Screen (rectangular/circular/inline); tap to log.
+- **Apple Watch** — shows your latest weight and logs a new one with the Digital Crown, straight into Apple Health
+  on the watch (no phone needed; Health syncs it to the iPhone).
 - **Siri & Shortcuts** — "Log my weight in WeightMe", "What's my weight in WeightMe", and an "Open Log Weight" action for the Action button.
 
 ## Requirements
@@ -91,6 +93,7 @@ skipped otherwise.
 | `WeightMe/Views` | SwiftUI screens |
 | `WeightMe/Intents` | App Intents / Siri |
 | `WeightMeWidgets` | WidgetKit extension (reads a snapshot the app writes to the app group) |
+| `WeightMeWatch` | Apple Watch app (latest weight + Crown logging, HealthKit on the watch) |
 | `Shared` | Code compiled into both the app and the widget |
 | `Scripts/make-icon.swift` | Renders the app icon |
 | `Scripts/set-testflight-secrets.sh` | Stores TestFlight signing secrets in GitHub |

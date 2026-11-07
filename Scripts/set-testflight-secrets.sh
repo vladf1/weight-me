@@ -1,21 +1,22 @@
 #!/bin/zsh
 # Stores the TestFlight workflow's signing secrets in the GitHub repository (see docs/TESTFLIGHT.md).
 #
-#   Scripts/set-testflight-secrets.sh                 # just WeightMe's two App Store profiles
+#   Scripts/set-testflight-secrets.sh                 # just WeightMe's three App Store profiles
 #   Scripts/set-testflight-secrets.sh \
 #     --p12 Distribution.p12 --p12-password '…' \
 #     --p8 AuthKey_ABC123XYZ.p8 --issuer 69a6de7e-…     # also the shared certificate and API key
 #
 # Profiles are looked up among the ones Xcode has downloaded (Xcode › Settings › Accounts ›
-# Download Manual Profiles), or pass --app-profile / --widget-profile with .mobileprovision files.
+# Download Manual Profiles), or pass --app-profile / --widget-profile / --watch-profile with .mobileprovision files.
 set -euo pipefail
 
 REPO=vladf1/weight-me
 TEAM=32R3YRS5WJ
 APP_ID=me.fridman.weightme
 WIDGET_ID=me.fridman.weightme.widgets
+WATCH_ID=me.fridman.weightme.watchkitapp
 
-p12="" p12_password="" p8="" issuer="" app_profile="" widget_profile=""
+p12="" p12_password="" p8="" issuer="" app_profile="" widget_profile="" watch_profile=""
 while (( $# )); do
   case $1 in
     --p12) p12=$2; shift 2 ;;
@@ -24,6 +25,7 @@ while (( $# )); do
     --issuer) issuer=$2; shift 2 ;;
     --app-profile) app_profile=$2; shift 2 ;;
     --widget-profile) widget_profile=$2; shift 2 ;;
+    --watch-profile) watch_profile=$2; shift 2 ;;
     *) echo "Unknown argument: $1" >&2; exit 2 ;;
   esac
 done
@@ -51,16 +53,19 @@ describe() { security cms -D -i "$1" | plutil -extract Name raw -; }
 
 [[ -n $app_profile ]] || app_profile=$(find_profile $APP_ID)
 [[ -n $widget_profile ]] || widget_profile=$(find_profile $WIDGET_ID)
-if [[ -z $app_profile || -z $widget_profile ]]; then
-  echo "Couldn't find App Store profiles for $APP_ID and $WIDGET_ID." >&2
+[[ -n $watch_profile ]] || watch_profile=$(find_profile $WATCH_ID)
+if [[ -z $app_profile || -z $widget_profile || -z $watch_profile ]]; then
+  echo "Couldn't find App Store profiles for $APP_ID, $WIDGET_ID and $WATCH_ID." >&2
   echo "Create them on developer.apple.com (docs/TESTFLIGHT.md), then Xcode › Settings › Accounts ›" >&2
-  echo "Download Manual Profiles, or pass --app-profile/--widget-profile." >&2
+  echo "Download Manual Profiles, or pass --app-profile/--widget-profile/--watch-profile." >&2
   exit 1
 fi
 echo "App profile:    $(describe "$app_profile")"
 echo "Widget profile: $(describe "$widget_profile")"
+echo "Watch profile:  $(describe "$watch_profile")"
 base64 -i "$app_profile" | gh secret set WEIGHTME_APP_STORE_PROFILE -R $REPO
 base64 -i "$widget_profile" | gh secret set WEIGHTME_WIDGET_APP_STORE_PROFILE -R $REPO
+base64 -i "$watch_profile" | gh secret set WEIGHTME_WATCH_APP_STORE_PROFILE -R $REPO
 
 if [[ -n $p12 ]]; then
   [[ -n $p12_password ]] || { echo "--p12 needs --p12-password" >&2; exit 2; }

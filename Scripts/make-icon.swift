@@ -1,12 +1,15 @@
 #!/usr/bin/env swift
 // Renders the WeightMe app icon (light, dark and tinted variants) as 1024×1024 PNGs.
 // Usage: swift Scripts/make-icon.swift WeightMe/Resources/Assets.xcassets/AppIcon.appiconset
+//        swift Scripts/make-icon.swift WeightMeWatch/Assets.xcassets/AppIcon.appiconset --watch
 import CoreGraphics
 import Foundation
 import ImageIO
 import UniformTypeIdentifiers
 
 let outDir = CommandLine.arguments.count > 1 ? CommandLine.arguments[1] : "."
+/// watchOS masks icons to a circle, so the drawing is pulled in from the edges.
+let isWatch = CommandLine.arguments.contains("--watch")
 let size = 1024.0
 let space = CGColorSpace(name: CGColorSpace.sRGB)!
 
@@ -40,7 +43,7 @@ func render(_ variant: Variant) -> CGImage {
         ctx.fill(full)
     }
 
-    let inset = 170.0
+    let inset = isWatch ? 270.0 : 170.0
     let plot = full.insetBy(dx: inset, dy: inset)
     func point(_ t: Double, _ y: Double) -> CGPoint {
         CGPoint(x: plot.minX + t * plot.width, y: plot.minY + y * plot.height)
@@ -121,5 +124,7 @@ func write(_ image: CGImage, _ name: String) {
 }
 
 write(render(.light), "AppIcon.png")
-write(render(.dark), "AppIcon-Dark.png")
-write(render(.tinted), "AppIcon-Tinted.png")
+if !isWatch {
+    write(render(.dark), "AppIcon-Dark.png")
+    write(render(.tinted), "AppIcon-Tinted.png")
+}

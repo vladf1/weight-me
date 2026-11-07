@@ -162,8 +162,17 @@ final class WeightStore {
     /// HealthKit samples are immutable, so an edit saves a replacement and then deletes the original.
     func update(_ entry: WeightEntry, kg: Double, date: Date) async throws {
         precondition(entry.isOwn)
+        let before = Set(byID.keys)
         try await add(kg: kg, date: date)
-        try await delete(entry)
+        do {
+            try await delete(entry)
+        } catch {
+            // Couldn't remove the original: roll back the replacement so there's no duplicate.
+            for id in Set(byID.keys).subtracting(before) {
+                if let added = byID[id] { try? await delete(added) }
+            }
+            throw error
+        }
     }
 
     func delete(_ entry: WeightEntry) async throws {

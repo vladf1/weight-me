@@ -99,7 +99,7 @@ nonisolated final class HealthService: @unchecked Sendable {
             kg: sample.quantity.doubleValue(for: Self.kilograms),
             sourceName: source.name,
             sourceBundleID: source.bundleIdentifier,
-            isOwn: source.bundleIdentifier == ownBundleID,
+            isOwn: isOwnSource(source.bundleIdentifier),
             importBatchID: sample.metadata?[WeightMeMetadata.importBatch] as? String
         )
     }
@@ -125,8 +125,23 @@ nonisolated final class HealthService: @unchecked Sendable {
     }
 
     /// Deletes one sample this app wrote. HealthKit silently refuses to delete other apps' samples.
+    /// The iPhone app or its watch app (me.fridman.weightme.watchkitapp).
+    func isOwnSource(_ bundleID: String) -> Bool {
+        bundleID == ownBundleID || bundleID.hasPrefix(ownBundleID + ".")
+    }
+
+    enum DeleteError: LocalizedError {
+        case notAllowed
+        var errorDescription: String? {
+            "Apple Health didn't let WeightMe delete this entry. Delete it on the device that logged it, or in the Health app."
+        }
+    }
+
+    /// Deletes one sample WeightMe wrote. HealthKit only lets an app delete its own samples (and may treat
+    /// entries logged on the watch as the watch app's), so a delete that removes nothing is an error.
     func delete(id: UUID) async throws {
-        _ = try await store.deleteObjects(of: Self.bodyMass, predicate: HKQuery.predicateForObject(with: id))
+        let removed = try await store.deleteObjects(of: Self.bodyMass, predicate: HKQuery.predicateForObject(with: id))
+        if removed == 0 { throw DeleteError.notAllowed }
     }
 
     /// Deletes every sample written by one CSV import. Returns how many were removed.

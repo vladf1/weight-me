@@ -14,6 +14,7 @@
 		2D97A69B6C322800DD419AFD /* CSVImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 054E14622167A851FDC417B6 /* CSVImportTests.swift */; };
 		315D28C30FB4BAB5496C495D /* HealthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E5942BDF65DA7229DE3E4EB /* HealthService.swift */; };
 		367D7541AF31694F24A7AA18 /* WeightUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69F8409B76827597228F9009 /* WeightUnit.swift */; };
+		367FEF8FC9D00A75D7CF8BF4 /* WeightMeWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D27D437AC4037DC1C54F142E /* WeightMeWatchApp.swift */; };
 		36FD39FDD084DAB381F44972 /* ChartInteractionUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B1397727D00272C56CBA4B8 /* ChartInteractionUITests.swift */; };
 		429DB25DA399862FFE65EBEC /* WeightWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AA8BEB2E090C85940CC933A /* WeightWidget.swift */; };
 		57C9A33B0C97870702D96556 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 38AF56C1A678D125A0877368 /* PrivacyInfo.xcprivacy */; };
@@ -29,6 +30,7 @@
 		80F83E86AD89DF15823EB63E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 628139DC85477741939CFEA9 /* Assets.xcassets */; };
 		838A63B830E79B22D5B0317B /* WeightStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADA3B3442036354B0EB9B66F /* WeightStore.swift */; };
 		83E318D78BC3B80ACE624FF2 /* WidgetSnapshotBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCABD3AB62DA923F623D74A2 /* WidgetSnapshotBuilder.swift */; };
+		8647DEED5BE6440AF049F0C5 /* WeightMeWatch.app in Embed Dependencies */ = {isa = PBXBuildFile; fileRef = A1DD2ACE7F61439C49A69A2F /* WeightMeWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		8894E5F21B14BB7940EE3982 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8097A1C5E22D96E712EFA9F8 /* RootView.swift */; };
 		89D30031BCD07DC0843F21BF /* ChartPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8520833706C65D5654D5A80F /* ChartPalette.swift */; };
 		8FEFE277E54B27B50DB0353C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 75FC3B40F8C6AF02A2AADEC6 /* Assets.xcassets */; };
@@ -38,16 +40,20 @@
 		B33347718FE005C6382D08BE /* EntryEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 345FF8D0E987ED93FE4D3E55 /* EntryEditorView.swift */; };
 		B880F58EF4DEA84527D59C81 /* EntriesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF54105CED6901B504FB09C1 /* EntriesScreen.swift */; };
 		BC2BF00C45A2D1E132C0BCCE /* WeightMeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C002A600C4C5008AED4B382 /* WeightMeApp.swift */; };
+		C40A6CA6A58FE25DA903235D /* WatchModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F0958C912682378801283FB /* WatchModel.swift */; };
 		C590E5EB5986347611B09A17 /* WeightMeWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 979805AA0506583DD72D860F /* WeightMeWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C6634A7EA956757CD8BAD3CA /* ChartScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B2FA42292AAB88427CC07F5 /* ChartScreen.swift */; };
 		CA4EAB547E3BA72FD9A1A4BE /* CSV.swift in Sources */ = {isa = PBXBuildFile; fileRef = F84485A28C773FE789904DEE /* CSV.swift */; };
 		CF8C6DD693EE4754198EF518 /* SharedStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D225292550B08B4F23509E0A /* SharedStorage.swift */; };
+		D96FD5B28DC94F6F49649CEA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 08BC2438BC06940B9D033069 /* PrivacyInfo.xcprivacy */; };
 		DC02AC14822F1FF4351F4916 /* SharedStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D225292550B08B4F23509E0A /* SharedStorage.swift */; };
 		E02243D835D1B15989EA5D21 /* CSVExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18139EB70FB6D2E9CF166568 /* CSVExport.swift */; };
 		E080779A22FF933B8877B84F /* WidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14CBC1D81486868CA98E859 /* WidgetViews.swift */; };
 		E28445EFA948C973B5863691 /* WidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14CBC1D81486868CA98E859 /* WidgetViews.swift */; };
 		E6F51BA74EAFC3A3EE8B56AB /* Analytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED573C2C6703281A5D4ED477 /* Analytics.swift */; };
 		E9A521A74D5DCD397DA72AFD /* WeightCSVImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21D694CA29B7C66CC5E2251F /* WeightCSVImport.swift */; };
+		EC94C0867C3998762FAFAE1C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B379F2E4602147748730287B /* Assets.xcassets */; };
+		F441D66716109FB3F9C2B1DD /* WeightUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69F8409B76827597228F9009 /* WeightUnit.swift */; };
 		FA35CB74AF642D1D88372898 /* WeightUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69F8409B76827597228F9009 /* WeightUnit.swift */; };
 /* End PBXBuildFile section */
 
@@ -66,6 +72,13 @@
 			remoteGlobalIDString = 5A20DC3880F6CF40ED14B094;
 			remoteInfo = WeightMe;
 		};
+		AC1C8B36783D88C345228DF9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 74C1CBF33709996593B87239 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 17A3F47A66584C68F1B26C4A;
+			remoteInfo = WeightMeWatch;
+		};
 		FC1DBB57A2FAD7F06FF45631 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 74C1CBF33709996593B87239 /* Project object */;
@@ -76,6 +89,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		73B482F35A92783FE8B2FA0C /* Embed Dependencies */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				8647DEED5BE6440AF049F0C5 /* WeightMeWatch.app in Embed Dependencies */,
+			);
+			name = "Embed Dependencies";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		CD801FD57985114E544F3CAF /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -91,6 +115,7 @@
 
 /* Begin PBXFileReference section */
 		054E14622167A851FDC417B6 /* CSVImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVImportTests.swift; sourceTree = "<group>"; };
+		08BC2438BC06940B9D033069 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		0C3A0252E636D33B99B71B35 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		0FAE28D8D38F3ACF18F110F1 /* ChartPanels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartPanels.swift; sourceTree = "<group>"; };
 		14A9201BA385103E7EF2E65C /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -113,6 +138,7 @@
 		628139DC85477741939CFEA9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		68593E91510970DB4BEB9762 /* WidgetSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSnapshot.swift; sourceTree = "<group>"; };
 		69F8409B76827597228F9009 /* WeightUnit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightUnit.swift; sourceTree = "<group>"; };
+		6F0958C912682378801283FB /* WatchModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchModel.swift; sourceTree = "<group>"; };
 		700C900FCD38E90F80B81242 /* WeightMeTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = WeightMeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		72CF458E1C131135DC29EDDD /* SettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsScreen.swift; sourceTree = "<group>"; };
 		75FC3B40F8C6AF02A2AADEC6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -122,11 +148,14 @@
 		979805AA0506583DD72D860F /* WeightMeWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = WeightMeWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		9956902F19B482359F8673AA /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		9FF44C9653880B0FDA726CAD /* DemoData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoData.swift; sourceTree = "<group>"; };
+		A1DD2ACE7F61439C49A69A2F /* WeightMeWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WeightMeWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ADA3B3442036354B0EB9B66F /* WeightStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightStore.swift; sourceTree = "<group>"; };
 		AF54105CED6901B504FB09C1 /* EntriesScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntriesScreen.swift; sourceTree = "<group>"; };
 		B14CBC1D81486868CA98E859 /* WidgetViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetViews.swift; sourceTree = "<group>"; };
+		B379F2E4602147748730287B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CCABD3AB62DA923F623D74A2 /* WidgetSnapshotBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSnapshotBuilder.swift; sourceTree = "<group>"; };
 		D225292550B08B4F23509E0A /* SharedStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedStorage.swift; sourceTree = "<group>"; };
+		D27D437AC4037DC1C54F142E /* WeightMeWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightMeWatchApp.swift; sourceTree = "<group>"; };
 		D7A3E33AC953CC03B4204594 /* WeightChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightChartView.swift; sourceTree = "<group>"; };
 		ED573C2C6703281A5D4ED477 /* Analytics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Analytics.swift; sourceTree = "<group>"; };
 		F84485A28C773FE789904DEE /* CSV.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSV.swift; sourceTree = "<group>"; };
@@ -160,6 +189,7 @@
 				AE90873ED494CDF9CABE5AAE /* WeightMe */,
 				6B4B0361D10B8FEABBA82666 /* WeightMeTests */,
 				9718172479B77946CA6DDCC4 /* WeightMeUITests */,
+				5C8EFDB68763305ABCB54B5D /* WeightMeWatch */,
 				E7040376E21B65809831CA0E /* WeightMeWidgets */,
 				5AA387BDBB863901BAE99A38 /* Products */,
 			);
@@ -234,9 +264,21 @@
 				5419AC7F15424AFBD44BEAB1 /* WeightMe.app */,
 				700C900FCD38E90F80B81242 /* WeightMeTests.xctest */,
 				8ABFE614941A200C64A250DD /* WeightMeUITests.xctest */,
+				A1DD2ACE7F61439C49A69A2F /* WeightMeWatch.app */,
 				979805AA0506583DD72D860F /* WeightMeWidgets.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		5C8EFDB68763305ABCB54B5D /* WeightMeWatch */ = {
+			isa = PBXGroup;
+			children = (
+				B379F2E4602147748730287B /* Assets.xcassets */,
+				08BC2438BC06940B9D033069 /* PrivacyInfo.xcprivacy */,
+				6F0958C912682378801283FB /* WatchModel.swift */,
+				D27D437AC4037DC1C54F142E /* WeightMeWatchApp.swift */,
+			);
+			path = WeightMeWatch;
 			sourceTree = "<group>";
 		};
 		6B4B0361D10B8FEABBA82666 /* WeightMeTests */ = {
@@ -352,6 +394,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		17A3F47A66584C68F1B26C4A /* WeightMeWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 85D8DA6BE2365668D40DF117 /* Build configuration list for PBXNativeTarget "WeightMeWatch" */;
+			buildPhases = (
+				BC9EF161BC623F357D9EA544 /* Sources */,
+				1AEDFA29CA5CDD16D8654B09 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = WeightMeWatch;
+			packageProductDependencies = (
+			);
+			productName = WeightMeWatch;
+			productReference = A1DD2ACE7F61439C49A69A2F /* WeightMeWatch.app */;
+			productType = "com.apple.product-type.application";
+		};
 		5244DEB98C7F307665283457 /* WeightMeUITests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = FA411ACD7F1477E67FD9B086 /* Build configuration list for PBXNativeTarget "WeightMeUITests" */;
@@ -377,11 +437,13 @@
 				69DCB8B80FB3356D9D67DFBC /* Sources */,
 				CC1CC57CCB677AEA2DE4022D /* Resources */,
 				CD801FD57985114E544F3CAF /* Embed Foundation Extensions */,
+				73B482F35A92783FE8B2FA0C /* Embed Dependencies */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				F71797EB7C0A9181E96C72C7 /* PBXTargetDependency */,
+				4BD84B63308E20A13D3E9686 /* PBXTargetDependency */,
 			);
 			name = WeightMe;
 			packageProductDependencies = (
@@ -435,6 +497,10 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 2720;
 				TargetAttributes = {
+					17A3F47A66584C68F1B26C4A = {
+						DevelopmentTeam = 32R3YRS5WJ;
+						ProvisioningStyle = Automatic;
+					};
 					5244DEB98C7F307665283457 = {
 						DevelopmentTeam = 32R3YRS5WJ;
 						ProvisioningStyle = Automatic;
@@ -470,6 +536,7 @@
 			targets = (
 				5A20DC3880F6CF40ED14B094 /* WeightMe */,
 				C17D411FA080817A269D47E7 /* WeightMeWidgets */,
+				17A3F47A66584C68F1B26C4A /* WeightMeWatch */,
 				A825118414FF48C0381F8325 /* WeightMeTests */,
 				5244DEB98C7F307665283457 /* WeightMeUITests */,
 			);
@@ -477,6 +544,15 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		1AEDFA29CA5CDD16D8654B09 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EC94C0867C3998762FAFAE1C /* Assets.xcassets in Resources */,
+				D96FD5B28DC94F6F49649CEA /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		5FACADD338E57721D6F35863 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -551,6 +627,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BC9EF161BC623F357D9EA544 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C40A6CA6A58FE25DA903235D /* WatchModel.swift in Sources */,
+				367FEF8FC9D00A75D7CF8BF4 /* WeightMeWatchApp.swift in Sources */,
+				F441D66716109FB3F9C2B1DD /* WeightUnit.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D2D51E00289AB6C5BB6FA503 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -571,6 +657,11 @@
 			target = 5A20DC3880F6CF40ED14B094 /* WeightMe */;
 			targetProxy = 275C71D7C96BE4D8A0115A60 /* PBXContainerItemProxy */;
 		};
+		4BD84B63308E20A13D3E9686 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 17A3F47A66584C68F1B26C4A /* WeightMeWatch */;
+			targetProxy = AC1C8B36783D88C345228DF9 /* PBXContainerItemProxy */;
+		};
 		81D1EEC867A4681C2F2C24A8 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 5A20DC3880F6CF40ED14B094 /* WeightMe */;
@@ -584,6 +675,23 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		00B61E54C611FDA72D301A9C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Config/WeightMeWatch.entitlements;
+				INFOPLIST_FILE = "Config/WeightMeWatch-Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = me.fridman.weightme.watchkitapp;
+				PRODUCT_NAME = WeightMeWatch;
+				PROVISIONING_PROFILE_SPECIFIER = "$(WEIGHTME_WATCH_PROFILE)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Debug;
+		};
 		01FB2A20BA08152F4BBC85CF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -659,6 +767,23 @@
 			};
 			name = Debug;
 		};
+		57F466A40A7DE97BFC0BF342 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Config/WeightMeWatch.entitlements;
+				INFOPLIST_FILE = "Config/WeightMeWatch-Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = me.fridman.weightme.watchkitapp;
+				PRODUCT_NAME = WeightMeWatch;
+				PROVISIONING_PROFILE_SPECIFIER = "$(WEIGHTME_WATCH_PROFILE)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Release;
+		};
 		835A47AA1F07BCE43747EACC /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -733,7 +858,6 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -807,7 +931,6 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -885,6 +1008,15 @@
 			buildConfigurations = (
 				39526A8C63CBEB122A9AC41B /* Debug */,
 				2F19AFEC1C449D790A4CE7DC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		85D8DA6BE2365668D40DF117 /* Build configuration list for PBXNativeTarget "WeightMeWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				00B61E54C611FDA72D301A9C /* Debug */,
+				57F466A40A7DE97BFC0BF342 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

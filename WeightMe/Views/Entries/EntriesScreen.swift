@@ -22,6 +22,7 @@ struct EntriesScreen: View {
     @State private var editing: WeightEntry?
     @State private var viewing: WeightEntry?
     @State private var pendingDelete: WeightEntry?
+    @State private var deleteError: String?
     @State private var isExporting = false
     @State private var sortOrder = [KeyPathComparator(\EntryRow.date, order: .reverse)]
     @State private var selection = Set<EntryRow.ID>()
@@ -86,10 +87,17 @@ struct EntriesScreen: View {
                             isPresented: Binding(get: { pendingDelete != nil }, set: { if !$0 { pendingDelete = nil } }),
                             titleVisibility: .visible, presenting: pendingDelete) { entry in
             Button("Delete \(unit.format(entry.kg))", role: .destructive) {
-                Task { try? await store.delete(entry) }
+                Task {
+                    do { try await store.delete(entry) } catch { deleteError = error.localizedDescription }
+                }
             }
         } message: { _ in
             Text("This can't be undone.")
+        }
+        .alert("Couldn't Delete", isPresented: Binding(get: { deleteError != nil }, set: { if !$0 { deleteError = nil } })) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(deleteError ?? "")
         }
     }
 
