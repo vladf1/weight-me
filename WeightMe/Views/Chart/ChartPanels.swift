@@ -5,9 +5,10 @@ struct SummaryHeader: View {
     let series: DerivedSeries
     let latest: WeightEntry?
     let unit: WeightUnit
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline) {
+        AdaptiveStack(horizontalAlignment: .firstTextBaseline, spacing: dynamicTypeSize.isAccessibilitySize ? 12 : nil) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("LATEST")
                     .font(.caption.weight(.semibold))
@@ -26,9 +27,9 @@ struct SummaryHeader: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            Spacer()
+            if !dynamicTypeSize.isAccessibilitySize { Spacer() }
             if let trend = series.trend.last {
-                VStack(alignment: .trailing, spacing: 4) {
+                VStack(alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .trailing, spacing: 4) {
                     Text("TREND")
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
@@ -127,12 +128,14 @@ struct StatsPanel: View {
     let visibleRange: ClosedRange<Date>
     let unit: WeightUnit
     var columns: Int = 2
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
+        let columns = dynamicTypeSize.isAccessibilitySize ? 1 : self.columns
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
+            AdaptiveStack {
                 Text("In View").font(.headline)
-                Spacer()
+                if !dynamicTypeSize.isAccessibilitySize { Spacer() }
                 Text(rangeText)
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -215,7 +218,7 @@ struct GoalCard: View {
             }
             if let goal = settings.goalKg, let current = series.trend.last?.kg {
                 let remaining = current - goal
-                HStack(alignment: .firstTextBaseline) {
+                AdaptiveStack(horizontalAlignment: .firstTextBaseline) {
                     Text(unit.format(goal))
                         .font(.title2.weight(.bold).monospacedDigit())
                         .foregroundStyle(ChartPalette.goal)

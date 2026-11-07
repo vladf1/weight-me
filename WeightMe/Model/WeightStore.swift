@@ -38,7 +38,19 @@ final class WeightStore {
         self.mode = mode
         importHistory = ImportRecord.loadAll()
         if mode == .demo {
-            replaceAll(DemoData.entries())
+            var days = 4 * 365 + 120
+            #if DEBUG
+            // -demoYears N: a longer demo history for performance testing.
+            let args = ProcessInfo.processInfo.arguments
+            if let i = args.firstIndex(of: "-demoYears"), args.indices.contains(i + 1), let years = Double(args[i + 1]) {
+                days = Int(years * 365)
+            }
+            #endif
+            let started = Date.now
+            replaceAll(DemoData.entries(days: days))
+            #if DEBUG
+            print("[perf] demo: \(entries.count) readings, load + series \(Int(Date.now.timeIntervalSince(started) * 1000)) ms")
+            #endif
             status = .ready
         } else {
             loadCache()

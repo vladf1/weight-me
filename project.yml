@@ -169,6 +169,22 @@ targets:
         TEST_TARGET_NAME: WeightMe
         SWIFT_DEFAULT_ACTOR_ISOLATION: nonisolated
 
+  WeightMeWatchUITests:
+    type: bundle.ui-testing
+    platform: watchOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: WeightMeWatchUITests
+    dependencies:
+      - target: WeightMeWatch
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: me.fridman.weightme.watchuitests
+        TEST_TARGET_NAME: WeightMeWatch
+        TARGETED_DEVICE_FAMILY: "4"
+        SWIFT_DEFAULT_ACTOR_ISOLATION: nonisolated
+
 schemes:
   WeightMe:
     build:
@@ -185,8 +201,13 @@ schemes:
     build:
       targets:
         WeightMeWatch: all
+        WeightMeWatchUITests: [test]
     run:
       config: Debug
+    test:
+      config: Debug
+      targets:
+        - WeightMeWatchUITests
   WeightMeUITests:
     build:
       targets:

@@ -207,6 +207,7 @@ struct WeightChartView: View {
         }
         .animation(.snappy(duration: 0.25), value: yScale)
         .simultaneousGesture(magnifyGesture)
+        .dynamicTypeSize(...DynamicTypeSize.xxLarge)
         .accessibilityLabel("Weight chart")
         .accessibilityIdentifier("weightChart")
     }

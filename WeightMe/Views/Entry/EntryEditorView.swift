@@ -63,16 +63,19 @@ struct EntryEditorView: View {
                                 Text(unit.symbol)
                                     .font(.title2.weight(.semibold))
                                     .foregroundStyle(.secondary)
+                                    .fixedSize()
                             }
                             .frame(maxWidth: .infinity)
                             stepButton("plus", delta: 0.1)
                         }
+                        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
                         Picker("Unit", selection: $unit) {
                             ForEach(WeightUnit.allCases) { Text($0.name).tag($0) }
                         }
                         .pickerStyle(.segmented)
+                        .dynamicTypeSize(...DynamicTypeSize.accessibility2)
                         if let previous = previousEntry, let kg = parsedKg, isValid {
-                            HStack(spacing: 4) {
+                            AdaptiveStack(spacing: 4) {
                                 Text("vs. \(unit.format(previous.kg)) on \(previous.date.formatted(.dateTime.month(.abbreviated).day()))")
                                     .foregroundStyle(.secondary)
                                 ChangeBadge(kg: kg - previous.kg, unit: unit)

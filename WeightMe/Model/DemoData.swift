@@ -2,16 +2,20 @@ import Foundation
 
 /// Realistic-looking multi-year history used for demo mode, previews and seeding the simulator.
 enum DemoData {
-    static func entries(endingAt end: Date = .now, seed: UInt64 = 42) -> [WeightEntry] {
+    /// `days` stretches the same shape over a longer history (e.g. 15 years for performance testing).
+    static func entries(endingAt end: Date = .now, seed: UInt64 = 42, days: Int = 4 * 365 + 120) -> [WeightEntry] {
         var rng = SeededGenerator(seed: seed)
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: end)
-        let totalDays = 4 * 365 + 120
+        let totalDays = days
+        let scale = Double(days) / Double(4 * 365 + 120)
+        func at(_ day: Int) -> Int { Int(Double(day) * scale) }
         let start = calendar.date(byAdding: .day, value: -totalDays, to: today)!
 
         // Piecewise-linear "true weight" in lb: lose, plateau, regain, lose again.
         let knots: [(day: Int, lb: Double)] = [
-            (0, 236), (200, 204), (330, 198), (520, 212), (640, 214), (900, 192), (1100, 186), (1300, 190), (totalDays, 181.5),
+            (0, 236), (at(200), 204), (at(330), 198), (at(520), 212), (at(640), 214), (at(900), 192), (at(1100), 186),
+            (at(1300), 190), (totalDays, 181.5),
         ]
         func trueWeight(_ day: Int) -> Double {
             for i in 1..<knots.count where day <= knots[i].day {
@@ -25,7 +29,7 @@ enum DemoData {
         var result: [WeightEntry] = []
         for day in 0...totalDays {
             // A ~3 month gap with no data at all (stopped tracking).
-            if (560...650).contains(day) { continue }
+            if (at(560)...at(650)).contains(day) { continue }
             let date = calendar.date(byAdding: .day, value: day, to: start)!
             let weekday = calendar.component(.weekday, from: date)
             let weekendBump = (weekday == 1 || weekday == 2) ? 0.9 : 0
@@ -33,7 +37,7 @@ enum DemoData {
 
             let source: (name: String, bundle: String, own: Bool, skip: Double, hour: Int)
             switch day {
-            case ..<700: source = ("Lose It!", "com.fitnow.loseit", false, 0.25, 7)
+            case ..<at(700): source = ("Lose It!", "com.fitnow.loseit", false, 0.25, 7)
             case ..<(totalDays - 60): source = ("Withings", "com.withings.wiScaleNG", false, 0.12, 6)
             default: source = ("WeightMe", "me.fridman.weightme", true, 0.1, 7)
             }

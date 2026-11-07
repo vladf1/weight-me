@@ -69,8 +69,13 @@ Any setting can also be overridden from the command line, e.g. `-chartRange Y -g
 xcodebuild -project WeightMe.xcodeproj -scheme WeightMe -destination 'platform=iOS Simulator,name=iPhone 18 Pro' test
 
 # UI tests: real HealthKit end to end (permission sheet, seeding, import with every confirmation gate,
-# undo, log/delete) plus chart gestures. Use a dedicated simulator — they write Health data.
+# undo, log/delete) plus chart gestures and a 15-year performance check. Use a dedicated simulator — they write Health data.
 xcodebuild -project WeightMe.xcodeproj -scheme WeightMeUITests -destination 'platform=iOS Simulator,name=iPhone 18 Pro' test
+```
+
+```sh
+# Watch UI test (skips until Health access is approved once by hand in the watch simulator)
+xcodebuild -project WeightMe.xcodeproj -scheme WeightMeWatch -destination 'platform=watchOS Simulator,name=Apple Watch Series 12 (46mm)' test
 ```
 
 The import UI test expects a Lose It-style `LoseIt-weights.csv` in the app's Documents folder on the simulator and is

@@ -130,9 +130,9 @@ struct EntriesScreen: View {
                             }
                     }
                 } header: {
-                    HStack {
+                    AdaptiveStack(spacing: 2) {
                         Text(month.formatted(.dateTime.month(.wide).year()))
-                        Spacer()
+                        Spacer(minLength: 0)
                         let mean = monthRows.map(\.kg).reduce(0, +) / Double(monthRows.count)
                         Text("avg \(unit.format(mean))").monospacedDigit()
                     }
@@ -195,8 +195,10 @@ struct EntryListRow: View {
     let row: EntryRow
     let unit: WeightUnit
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
-        HStack(alignment: .center, spacing: 12) {
+        AdaptiveStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 3) {
                 Text(unit.format(row.kg))
                     .font(.body.weight(.semibold).monospacedDigit())
@@ -204,8 +206,8 @@ struct EntryListRow: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            Spacer()
-            VStack(alignment: .trailing, spacing: 3) {
+            if !dynamicTypeSize.isAccessibilitySize { Spacer() }
+            VStack(alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .trailing, spacing: 3) {
                 if let delta = row.deltaKg { DeltaText(kg: delta, unit: unit).font(.subheadline) }
                 SourceLabel(entry: row.entry).font(.caption2)
             }
