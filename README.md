@@ -1,5 +1,7 @@
 # WeightMe
 
+[![CI](https://github.com/vladf1/weight-me/actions/workflows/ci.yml/badge.svg)](https://github.com/vladf1/weight-me/actions/workflows/ci.yml)
+
 A deliberately simple weight tracker for iPhone, iPad and iPhone Duo — a replacement for Lose It! that does one thing: track your weight, with **Apple Health as the source of truth** and very good graphs.
 
 ## Features
@@ -37,7 +39,14 @@ xcodegen generate        # only needed after editing project.yml
 open WeightMe.xcodeproj
 ```
 
-Set your own team in `project.yml` (`DEVELOPMENT_TEAM`) and change the bundle ID prefix / app group if you fork this.
+Bundle IDs are `me.fridman.weightme` / `me.fridman.weightme.widgets` with app group `group.me.fridman.weightme`
+(team `32R3YRS5WJ`); change them in `project.yml` and `Shared/SharedStorage.swift` if you fork this.
+
+### TestFlight and CI
+
+Every push runs [CI](.github/workflows/ci.yml) (build + unit tests). TestFlight uploads are started by hand
+([workflow](.github/workflows/testflight.yml)); one-time setup is in [docs/TESTFLIGHT.md](docs/TESTFLIGHT.md).
+Privacy policy: [PRIVACY.md](PRIVACY.md).
 
 ### Demo mode
 
@@ -83,3 +92,5 @@ skipped otherwise.
 | `WeightMeWidgets` | WidgetKit extension (reads a snapshot the app writes to the app group) |
 | `Shared` | Code compiled into both the app and the widget |
 | `Scripts/make-icon.swift` | Renders the app icon |
+| `Scripts/set-testflight-secrets.sh` | Stores TestFlight signing secrets in GitHub |
+| `.github/` | CI and TestFlight workflows |

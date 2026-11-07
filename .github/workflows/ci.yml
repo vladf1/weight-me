@@ -1,0 +1,54 @@
+# Builds WeightMe and runs its unit tests on every push and pull request, and checks that the
+# Release configuration (what TestFlight gets) compiles. The HealthKit UI tests are not run here:
+# they drive the system Health permission sheet and write to the simulator's Health store, so
+# they run locally (see README). The TestFlight workflow calls this one first.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    name: Build and unit tests
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - name: Select Xcode
+        run: .github/scripts/select-xcode.sh
+      - name: Pick a simulator
+        id: simulator
+        run: echo "udid=$(.github/scripts/pick-simulator.sh)" >> "$GITHUB_OUTPUT"
+      - name: Unit tests
+        run: |
+          status=0
+          xcodebuild -project WeightMe.xcodeproj -scheme WeightMe \
+            -destination "id=${{ steps.simulator.outputs.udid }}" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            -resultBundlePath "$RUNNER_TEMP/UnitTests.xcresult" \
+            test > "$RUNNER_TEMP/test.log" 2>&1 || status=$?
+          grep -E "✔|✘|error:|warning: .*\.swift|\*\* TEST" "$RUNNER_TEMP/test.log" | tail -80 || true
+          exit $status
+      - name: Release build (unsigned)
+        run: |
+          status=0
+          xcodebuild -project WeightMe.xcodeproj -scheme WeightMe -configuration Release \
+            -destination generic/platform=iOS -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            CODE_SIGNING_ALLOWED=NO build > "$RUNNER_TEMP/release.log" 2>&1 || status=$?
+          grep -E "error:|warning: .*\.swift|\*\* BUILD" "$RUNNER_TEMP/release.log" | tail -60 || true
+          exit $status
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: unit-test-results
+          path: ${{ runner.temp }}/UnitTests.xcresult
+          retention-days: 7

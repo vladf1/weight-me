@@ -35,7 +35,7 @@ enum DemoData {
             switch day {
             case ..<700: source = ("Lose It!", "com.fitnow.loseit", false, 0.25, 7)
             case ..<(totalDays - 60): source = ("Withings", "com.withings.wiScaleNG", false, 0.12, 6)
-            default: source = ("WeightMe", "com.vladf1.WeightMe", true, 0.1, 7)
+            default: source = ("WeightMe", "me.fridman.weightme", true, 0.1, 7)
             }
             if Double.random(in: 0...1, using: &rng) < source.skip { continue }
             let minute = Int.random(in: 0..<50, using: &rng)

@@ -24,7 +24,7 @@ enum Variant { case light, dark, tinted }
 
 func render(_ variant: Variant) -> CGImage {
     let ctx = CGContext(data: nil, width: Int(size), height: Int(size), bitsPerComponent: 8, bytesPerRow: 0,
-                        space: space, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+                        space: space, bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue)!  // App Store rejects icons with alpha
     let full = CGRect(x: 0, y: 0, width: size, height: size)
 
     // Background

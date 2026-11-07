@@ -1,6 +1,6 @@
 name: WeightMe
 options:
-  bundleIdPrefix: com.vladf1
+  bundleIdPrefix: me.fridman
   deploymentTarget:
     iOS: "27.0"
   xcodeVersion: "27.2"
@@ -55,9 +55,10 @@ targets:
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
         CFBundleURLTypes:
-          - CFBundleURLName: com.vladf1.WeightMe
+          - CFBundleURLName: me.fridman.weightme
             CFBundleURLSchemes: [weightme]
         LSSupportsOpeningDocumentsInPlace: false
+        UIRequiredDeviceCapabilities: [healthkit]
     entitlements:
       path: Config/WeightMe.entitlements
       properties:
@@ -65,14 +66,17 @@ targets:
         com.apple.developer.healthkit.access: []
         com.apple.developer.healthkit.background-delivery: true
         com.apple.security.application-groups:
-          - group.com.vladf1.weightme
+          - group.me.fridman.weightme
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.vladf1.WeightMe
+        PRODUCT_BUNDLE_IDENTIFIER: me.fridman.weightme
         PRODUCT_NAME: WeightMe
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         ENABLE_PREVIEWS: YES
+        # Empty locally (automatic signing). CI's App Store build passes CODE_SIGN_STYLE=Manual
+        # and the profile names (see .github/workflows/testflight.yml).
+        PROVISIONING_PROFILE_SPECIFIER: $(WEIGHTME_APP_PROFILE)
 
   WeightMeWidgets:
     type: app-extension
@@ -92,10 +96,11 @@ targets:
       path: Config/WeightMeWidgets.entitlements
       properties:
         com.apple.security.application-groups:
-          - group.com.vladf1.weightme
+          - group.me.fridman.weightme
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.vladf1.WeightMe.Widgets
+        PRODUCT_BUNDLE_IDENTIFIER: me.fridman.weightme.widgets
+        PROVISIONING_PROFILE_SPECIFIER: $(WEIGHTME_WIDGET_PROFILE)
         SKIP_INSTALL: YES
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME: WidgetBackground
@@ -110,7 +115,7 @@ targets:
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
-        PRODUCT_BUNDLE_IDENTIFIER: com.vladf1.WeightMeTests
+        PRODUCT_BUNDLE_IDENTIFIER: me.fridman.weightme.tests
 
   WeightMeUITests:
     type: bundle.ui-testing
@@ -122,7 +127,7 @@ targets:
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
-        PRODUCT_BUNDLE_IDENTIFIER: com.vladf1.WeightMeUITests
+        PRODUCT_BUNDLE_IDENTIFIER: me.fridman.weightme.uitests
         TEST_TARGET_NAME: WeightMe
         SWIFT_DEFAULT_ACTOR_ISOLATION: nonisolated
 

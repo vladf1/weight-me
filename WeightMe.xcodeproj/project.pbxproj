@@ -9,12 +9,14 @@
 /* Begin PBXBuildFile section */
 		046D6FB7247E771DDD63B8E6 /* SettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72CF458E1C131135DC29EDDD /* SettingsScreen.swift */; };
 		0B4CE228B9DCF0E8A1FF7B30 /* ChartPanels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FAE28D8D38F3ACF18F110F1 /* ChartPanels.swift */; };
+		100C31E4B38DFB45A4DBA95F /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 14A9201BA385103E7EF2E65C /* PrivacyInfo.xcprivacy */; };
 		17F929A4F2679722D4A43291 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9956902F19B482359F8673AA /* AppSettings.swift */; };
 		2D97A69B6C322800DD419AFD /* CSVImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 054E14622167A851FDC417B6 /* CSVImportTests.swift */; };
 		315D28C30FB4BAB5496C495D /* HealthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E5942BDF65DA7229DE3E4EB /* HealthService.swift */; };
 		367D7541AF31694F24A7AA18 /* WeightUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69F8409B76827597228F9009 /* WeightUnit.swift */; };
 		36FD39FDD084DAB381F44972 /* ChartInteractionUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B1397727D00272C56CBA4B8 /* ChartInteractionUITests.swift */; };
 		429DB25DA399862FFE65EBEC /* WeightWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AA8BEB2E090C85940CC933A /* WeightWidget.swift */; };
+		57C9A33B0C97870702D96556 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 38AF56C1A678D125A0877368 /* PrivacyInfo.xcprivacy */; };
 		58473CBAE8991F59D6D08424 /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68593E91510970DB4BEB9762 /* WidgetSnapshot.swift */; };
 		5F9548739E18CB524D21E602 /* ImportFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33C28DD66BEA3589D3AED03E /* ImportFlowView.swift */; };
 		61EB9DAE7849ADD5DE58F786 /* WeightEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3231DDA935B940AB52A3810E /* WeightEntry.swift */; };
@@ -90,6 +92,7 @@
 		054E14622167A851FDC417B6 /* CSVImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVImportTests.swift; sourceTree = "<group>"; };
 		0C3A0252E636D33B99B71B35 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		0FAE28D8D38F3ACF18F110F1 /* ChartPanels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartPanels.swift; sourceTree = "<group>"; };
+		14A9201BA385103E7EF2E65C /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		18139EB70FB6D2E9CF166568 /* CSVExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVExport.swift; sourceTree = "<group>"; };
 		1AA8BEB2E090C85940CC933A /* WeightWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightWidget.swift; sourceTree = "<group>"; };
 		21D694CA29B7C66CC5E2251F /* WeightCSVImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightCSVImport.swift; sourceTree = "<group>"; };
@@ -99,6 +102,7 @@
 		3231DDA935B940AB52A3810E /* WeightEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightEntry.swift; sourceTree = "<group>"; };
 		33C28DD66BEA3589D3AED03E /* ImportFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportFlowView.swift; sourceTree = "<group>"; };
 		345FF8D0E987ED93FE4D3E55 /* EntryEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryEditorView.swift; sourceTree = "<group>"; };
+		38AF56C1A678D125A0877368 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		4056814EFB9ED0A17A742A35 /* HealthFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthFlowUITests.swift; sourceTree = "<group>"; };
 		4B1397727D00272C56CBA4B8 /* ChartInteractionUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartInteractionUITests.swift; sourceTree = "<group>"; };
 		4E5942BDF65DA7229DE3E4EB /* HealthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthService.swift; sourceTree = "<group>"; };
@@ -246,6 +250,7 @@
 			isa = PBXGroup;
 			children = (
 				75FC3B40F8C6AF02A2AADEC6 /* Assets.xcassets */,
+				38AF56C1A678D125A0877368 /* PrivacyInfo.xcprivacy */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -326,6 +331,7 @@
 			isa = PBXGroup;
 			children = (
 				628139DC85477741939CFEA9 /* Assets.xcassets */,
+				14A9201BA385103E7EF2E65C /* PrivacyInfo.xcprivacy */,
 				1AA8BEB2E090C85940CC933A /* WeightWidget.swift */,
 			);
 			path = WeightMeWidgets;
@@ -473,6 +479,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				80F83E86AD89DF15823EB63E /* Assets.xcassets in Resources */,
+				100C31E4B38DFB45A4DBA95F /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -481,6 +488,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8FEFE277E54B27B50DB0353C /* Assets.xcassets in Resources */,
+				57C9A33B0C97870702D96556 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -585,8 +593,9 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.vladf1.WeightMe;
+				PRODUCT_BUNDLE_IDENTIFIER = me.fridman.weightme;
 				PRODUCT_NAME = WeightMe;
+				PROVISIONING_PROFILE_SPECIFIER = "$(WEIGHTME_APP_PROFILE)";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -604,7 +613,8 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.vladf1.WeightMe.Widgets;
+				PRODUCT_BUNDLE_IDENTIFIER = me.fridman.weightme.widgets;
+				PROVISIONING_PROFILE_SPECIFIER = "$(WEIGHTME_WIDGET_PROFILE)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -621,7 +631,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.vladf1.WeightMeTests;
+				PRODUCT_BUNDLE_IDENTIFIER = me.fridman.weightme.tests;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WeightMe.app/WeightMe";
@@ -638,7 +648,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.vladf1.WeightMeTests;
+				PRODUCT_BUNDLE_IDENTIFIER = me.fridman.weightme.tests;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WeightMe.app/WeightMe";
@@ -657,7 +667,8 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.vladf1.WeightMe.Widgets;
+				PRODUCT_BUNDLE_IDENTIFIER = me.fridman.weightme.widgets;
+				PROVISIONING_PROFILE_SPECIFIER = "$(WEIGHTME_WIDGET_PROFILE)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -815,7 +826,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.vladf1.WeightMeUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = me.fridman.weightme.uitests;
 				SDKROOT = iphoneos;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -836,8 +847,9 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.vladf1.WeightMe;
+				PRODUCT_BUNDLE_IDENTIFIER = me.fridman.weightme;
 				PRODUCT_NAME = WeightMe;
+				PROVISIONING_PROFILE_SPECIFIER = "$(WEIGHTME_APP_PROFILE)";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -853,7 +865,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.vladf1.WeightMeUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = me.fridman.weightme.uitests;
 				SDKROOT = iphoneos;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
 				TARGETED_DEVICE_FAMILY = "1,2";

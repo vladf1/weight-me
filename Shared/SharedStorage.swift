@@ -2,7 +2,7 @@ import Foundation
 
 /// Locations shared between the app and its widget extension.
 nonisolated enum SharedStorage {
-    static let appGroupID = "group.com.vladf1.weightme"
+    static let appGroupID = "group.me.fridman.weightme"
 
     /// App-group container, falling back to the app's own Application Support directory
     /// (e.g. when the app group isn't provisioned yet).

@@ -11,7 +11,7 @@ nonisolated final class HealthService: @unchecked Sendable {
 
     var isAvailable: Bool { HKHealthStore.isHealthDataAvailable() }
 
-    var ownBundleID: String { Bundle.main.bundleIdentifier ?? "com.vladf1.WeightMe" }
+    var ownBundleID: String { Bundle.main.bundleIdentifier ?? "me.fridman.weightme" }
 
     // MARK: Authorization
 

@@ -1,0 +1,158 @@
+# Uploads a WeightMe build to App Store Connect, from where TestFlight offers it to testers once
+# Apple has processed it. Run it by hand on main: Actions › TestFlight › Run workflow, or
+#   gh workflow run testflight.yml --ref main
+# It runs CI first, so only builds whose tests pass are uploaded. The build number is this
+# workflow's run number; the version is MARKETING_VERSION in project.yml (bump it after a release,
+# since App Store Connect accepts no new builds for a version that's already released).
+#
+# Secrets (Settings › Secrets and variables › Actions). The first five are the same values as
+# Sloppy Tanks' secrets of the same names (same team, same certificate, same API key):
+#   APP_STORE_CERTIFICATES           base64 .p12 containing the "Apple Distribution" identity
+#   APP_STORE_CERTIFICATES_PASSWORD  its password
+#   NOTARY_API_KEY                   App Store Connect API key: the .p8 file's text
+#   NOTARY_API_KEY_ID                its key ID
+#   NOTARY_API_ISSUER                its issuer ID
+# and two that are specific to WeightMe (App Store provisioning profiles, base64):
+#   WEIGHTME_APP_STORE_PROFILE       for me.fridman.weightme (HealthKit + App Groups)
+#   WEIGHTME_WIDGET_APP_STORE_PROFILE for me.fridman.weightme.widgets (App Groups)
+# While any of them is missing or still a "STUB" placeholder, the job uploads nothing and says so.
+# docs/TESTFLIGHT.md has the one-time setup.
+name: TestFlight
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: testflight
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  upload:
+    name: Archive and upload
+    needs: ci
+    if: github.ref == 'refs/heads/main'
+    runs-on: macos-26
+    timeout-minutes: 60
+    env:
+      TEAM_ID: 32R3YRS5WJ
+      APP_BUNDLE_ID: me.fridman.weightme
+      WIDGET_BUNDLE_ID: me.fridman.weightme.widgets
+    steps:
+      - name: Check signing secrets
+        id: secrets
+        env:
+          CERTIFICATES: ${{ secrets.APP_STORE_CERTIFICATES }}
+          CERTIFICATES_PASSWORD: ${{ secrets.APP_STORE_CERTIFICATES_PASSWORD }}
+          API_KEY: ${{ secrets.NOTARY_API_KEY }}
+          API_KEY_ID: ${{ secrets.NOTARY_API_KEY_ID }}
+          API_ISSUER: ${{ secrets.NOTARY_API_ISSUER }}
+          APP_PROFILE: ${{ secrets.WEIGHTME_APP_STORE_PROFILE }}
+          WIDGET_PROFILE: ${{ secrets.WEIGHTME_WIDGET_APP_STORE_PROFILE }}
+        run: |
+          missing=()
+          for name in CERTIFICATES CERTIFICATES_PASSWORD API_KEY API_KEY_ID API_ISSUER APP_PROFILE WIDGET_PROFILE; do
+            value="${!name}"
+            if [ -z "$value" ] || [[ "$value" == STUB* ]]; then missing+=("$name"); fi
+          done
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::warning::TestFlight signing secrets not set yet (${missing[*]}): nothing was uploaded. See docs/TESTFLIGHT.md."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v7
+        if: steps.secrets.outputs.ready == 'true'
+
+      - name: Select Xcode
+        if: steps.secrets.outputs.ready == 'true'
+        run: .github/scripts/select-xcode.sh
+
+      - name: Signing keychain, profiles and API key
+        if: steps.secrets.outputs.ready == 'true'
+        env:
+          CERTIFICATES: ${{ secrets.APP_STORE_CERTIFICATES }}
+          CERTIFICATES_PASSWORD: ${{ secrets.APP_STORE_CERTIFICATES_PASSWORD }}
+          API_KEY: ${{ secrets.NOTARY_API_KEY }}
+          API_KEY_ID: ${{ secrets.NOTARY_API_KEY_ID }}
+          APP_PROFILE: ${{ secrets.WEIGHTME_APP_STORE_PROFILE }}
+          WIDGET_PROFILE: ${{ secrets.WEIGHTME_WIDGET_APP_STORE_PROFILE }}
+        run: |
+          keychain="$RUNNER_TEMP/signing.keychain-db"
+          password="$(uuidgen)"
+          security create-keychain -p "$password" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$password" "$keychain"
+          printf '%s' "$CERTIFICATES" | base64 --decode > "$RUNNER_TEMP/app-store.p12"
+          security import "$RUNNER_TEMP/app-store.p12" -k "$keychain" -P "$CERTIFICATES_PASSWORD" -T /usr/bin/codesign
+          rm "$RUNNER_TEMP/app-store.p12"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$password" "$keychain"
+          # shellcheck disable=SC2046 # one argument per existing keychain is intended
+          security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
+
+          # Install both profiles where Xcode looks, and remember their names and UUIDs.
+          for kind in APP WIDGET; do
+            var="${kind}_PROFILE"
+            file="$RUNNER_TEMP/$kind.mobileprovision"
+            printf '%s' "${!var}" | base64 --decode > "$file"
+            security cms -D -i "$file" > "$RUNNER_TEMP/$kind.plist"
+            uuid=$(plutil -extract UUID raw "$RUNNER_TEMP/$kind.plist")
+            name=$(plutil -extract Name raw "$RUNNER_TEMP/$kind.plist")
+            appid=$(plutil -extract Entitlements.application-identifier raw "$RUNNER_TEMP/$kind.plist")
+            echo "$kind profile: $name ($appid, expires $(plutil -extract ExpirationDate raw "$RUNNER_TEMP/$kind.plist"))"
+            for dir in "$HOME/Library/MobileDevice/Provisioning Profiles" "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"; do
+              mkdir -p "$dir" && cp "$file" "$dir/$uuid.mobileprovision"
+            done
+            echo "${kind}_PROFILE_NAME=$name" >> "$GITHUB_ENV"
+            echo "${kind}_PROFILE_UUID=$uuid" >> "$GITHUB_ENV"
+          done
+
+          mkdir -p "$RUNNER_TEMP/private_keys"
+          printf '%s' "$API_KEY" > "$RUNNER_TEMP/private_keys/AuthKey_$API_KEY_ID.p8"
+
+      - name: Archive
+        if: steps.secrets.outputs.ready == 'true'
+        run: |
+          status=0
+          xcodebuild -project WeightMe.xcodeproj -scheme WeightMe -configuration Release \
+            -destination generic/platform=iOS -archivePath "$RUNNER_TEMP/WeightMe.xcarchive" \
+            CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY="Apple Distribution" DEVELOPMENT_TEAM="$TEAM_ID" \
+            WEIGHTME_APP_PROFILE="$APP_PROFILE_NAME" WEIGHTME_WIDGET_PROFILE="$WIDGET_PROFILE_NAME" \
+            CURRENT_PROJECT_VERSION="${{ github.run_number }}" \
+            archive > "$RUNNER_TEMP/archive.log" 2>&1 || status=$?
+          grep -E "error:|warning: .*(sign|provision|entitle)|\*\* ARCHIVE" "$RUNNER_TEMP/archive.log" | tail -60 || true
+          exit $status
+
+      - name: Export and upload to App Store Connect
+        if: steps.secrets.outputs.ready == 'true'
+        env:
+          API_KEY_ID: ${{ secrets.NOTARY_API_KEY_ID }}
+          API_ISSUER: ${{ secrets.NOTARY_API_ISSUER }}
+        run: |
+          plist="$RUNNER_TEMP/ExportOptions.plist"
+          /usr/libexec/PlistBuddy -c "Add :method string app-store-connect" \
+            -c "Add :destination string upload" \
+            -c "Add :teamID string $TEAM_ID" \
+            -c "Add :signingStyle string manual" \
+            -c "Add :signingCertificate string Apple Distribution" \
+            -c "Add :uploadSymbols bool true" \
+            -c "Add :manageAppVersionAndBuildNumber bool false" \
+            -c "Add :provisioningProfiles dict" \
+            -c "Add :provisioningProfiles:$APP_BUNDLE_ID string $APP_PROFILE_UUID" \
+            -c "Add :provisioningProfiles:$WIDGET_BUNDLE_ID string $WIDGET_PROFILE_UUID" \
+            "$plist"
+          xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/WeightMe.xcarchive" \
+            -exportOptionsPlist "$plist" -exportPath "$RUNNER_TEMP/export" \
+            -authenticationKeyPath "$RUNNER_TEMP/private_keys/AuthKey_$API_KEY_ID.p8" \
+            -authenticationKeyID "$API_KEY_ID" -authenticationKeyIssuerID "$API_ISSUER"
+          echo "### Uploaded build ${{ github.run_number }} to App Store Connect" >> "$GITHUB_STEP_SUMMARY"
+          echo "It appears in TestFlight once Apple finishes processing (usually 5–30 minutes)." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove the signing keychain and key
+        if: always() && steps.secrets.outputs.ready == 'true'
+        run: |
+          security delete-keychain "$RUNNER_TEMP/signing.keychain-db" 2>/dev/null || true
+          rm -rf "$RUNNER_TEMP/private_keys" "$RUNNER_TEMP"/*.mobileprovision "$RUNNER_TEMP"/APP.plist "$RUNNER_TEMP"/WIDGET.plist
