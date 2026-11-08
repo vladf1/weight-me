@@ -4,7 +4,7 @@ import UniformTypeIdentifiers
 
 /// Import is deliberately slow and explicit:
 /// 1. explain → 2. pick file → 3. review every row (counts, chart, warnings, options) →
-/// 4. confirmation alert → 5. type the number of entries to confirm → 6. write, with undo afterward.
+/// 4. type the number of entries to confirm → 5. write, with undo afterward.
 struct ImportFlowView: View {
     /// When set, skips the intro and opens this file straight into review.
     var initialURL: URL? = nil
@@ -223,7 +223,6 @@ struct ImportReviewView: View {
     @State private var reparsed: ParsedImportFile?
     @State private var filter: RowFilter = .toImport
     @State private var didLoad = false
-    @State private var showingFirstConfirmation = false
     @State private var showingFinalConfirmation = false
 
     private var activeFile: ParsedImportFile { reparsed ?? file }
@@ -335,9 +334,9 @@ struct ImportReviewView: View {
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: 6) {
                 Button {
-                    showingFirstConfirmation = true
+                    showingFinalConfirmation = true
                 } label: {
-                    Text(plan.importCount == 0 ? "Nothing to Import" : "Review & Import \(plan.importCount) Entries…")
+                    Text(plan.importCount == 0 ? "Nothing to Import" : "Import \(plan.importCount) Entries…")
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 6)
@@ -348,18 +347,6 @@ struct ImportReviewView: View {
             }
             .padding()
             .background(.bar)
-        }
-        .alert("Add \(plan.importCount) entries to Apple Health?", isPresented: $showingFirstConfirmation) {
-            Button("Cancel", role: .cancel) {}
-            Button("Continue") {
-                // Presenting a sheet while the alert is still dismissing is silently dropped.
-                Task {
-                    try? await Task.sleep(for: .milliseconds(450))
-                    showingFinalConfirmation = true
-                }
-            }
-        } message: {
-            Text(firstConfirmationMessage(plan))
         }
         .sheet(isPresented: $showingFinalConfirmation) {
             FinalImportConfirmation(plan: plan, unit: unit) {
@@ -409,15 +396,6 @@ struct ImportReviewView: View {
         }
         case .problems: plan.rows.filter { if case .invalid = $0.status { true } else { false } }
         }
-    }
-
-    private func firstConfirmationMessage(_ plan: ImportPlan) -> String {
-        var parts = ["These weights will be written to Apple Health as new entries from WeightMe, in \(unit.name.lowercased())."]
-        if let range = plan.importDateRange {
-            parts.append("They span \(range.lowerBound.formatted(date: .abbreviated, time: .omitted)) to \(range.upperBound.formatted(date: .abbreviated, time: .omitted)).")
-        }
-        parts.append("Other apps that use Apple Health will see them. Existing entries are not changed.")
-        return parts.joined(separator: " ")
     }
 }
 

@@ -104,7 +104,7 @@ final class HealthFlowUITests: XCTestCase {
 
     @MainActor func test3_ImportLoseItThenUndo() throws {
         let app = launch(["-openImport", "LoseIt-weights.csv"])
-        let importButton = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Review & Import'")).firstMatch
+        let importButton = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Import '")).firstMatch
         guard importButton.waitForExistence(timeout: 8) else {
             throw XCTSkip("LoseIt-weights.csv not present in the app's Documents folder")
         }
@@ -112,14 +112,9 @@ final class HealthFlowUITests: XCTestCase {
         let count = importButton.label.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()
         XCTAssertFalse(count.isEmpty)
 
-        // Gate 1: alert.
         importButton.tap()
-        let alert = app.alerts.firstMatch
-        XCTAssertTrue(alert.waitForExistence(timeout: 3))
-        snapshot(app, "11-import-alert")
-        alert.buttons["Continue"].tap()
 
-        // Gate 2: acknowledge + type the count.
+        // Final check: acknowledge + type the count.
         let add = app.buttons["Add \(count) Entries to Apple Health"]
         XCTAssertTrue(add.waitForExistence(timeout: 6))
         XCTAssertFalse(add.isEnabled, "Final button must start disabled")
