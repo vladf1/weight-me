@@ -112,9 +112,11 @@ struct LatestWeightCard: View {
     /// Editing: what saving will do (replace a recent reading, or the change from the last one).
     private var editingTopRow: some View {
         VStack(spacing: 3) {
-            Text("NEW WEIGHT")
-                .font(.caption.weight(.semibold))
+            // Same font and spot as "Updated …" at rest, so only the words change.
+            Text("New weight")
+                .font(.subheadline)
                 .foregroundStyle(.secondary)
+                .lineLimit(1)
             Group {
                 if let errorMessage {
                     Label(errorMessage, systemImage: "exclamationmark.triangle.fill").foregroundStyle(.red)

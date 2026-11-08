@@ -46,7 +46,7 @@ final class LatestWeightCardUITests: XCTestCase {
         dragRulerUp(app)
         XCTAssertGreaterThan(value(field), start, "Dragging left should increase the weight")
         XCTAssertTrue(save.waitForExistence(timeout: 2))
-        XCTAssertTrue(app.staticTexts["NEW WEIGHT"].exists)
+        XCTAssertTrue(app.staticTexts["New weight"].exists)
         XCTAssertFalse(app.staticTexts["quickLogReplaces"].exists, "Demo's latest is hours old: adds, doesn't replace")
         XCTAssertFalse(app.buttons["Date and time"].exists, "No time picker on the main card")
         snapshot(app, "41-editing")
