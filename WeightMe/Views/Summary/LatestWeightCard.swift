@@ -113,7 +113,9 @@ struct LatestWeightCard: View {
                         Label(errorMessage, systemImage: "exclamationmark.triangle.fill").foregroundStyle(.red)
                     } else if parsedValue != nil, !isValid {
                         Text("Not a body weight in \(unit.name.lowercased())").foregroundStyle(.red)
-                    } else if let kg = parsedKg, let previous = previousEntry {
+                    } else if isEdited, !isSaving, let kg = parsedKg, let previous = previousEntry {
+                        // Only for a value you entered, and not mid-save: Cancel restores the latest, and a
+                        // save makes the new reading the "previous" one, while this row fades out.
                         HStack(spacing: 4) {
                             ChangeBadge(kg: kg - previous.kg, unit: unit)
                             Text("vs. \(previous.date.formatted(.relative(presentation: .named)))")
