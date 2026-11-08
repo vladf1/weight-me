@@ -134,7 +134,7 @@ struct LatestWeightCard: View {
         }
     }
 
-    /// At rest: when the latest was taken (and by what, if not WeightMe).
+    /// At rest, centered over the number: "Updated 2 hours ago" (and the source, if not WeightMe).
     private var restingTopRow: some View {
         HStack(spacing: 6) {
             // One line, so this row's height never changes (see `visible`).
@@ -143,15 +143,15 @@ struct LatestWeightCard: View {
                     .foregroundStyle(.green)
                     .accessibilityLabel("Saved to Health")
             } else if let latest {
-                Text(latest.isOwn
-                     ? latest.date.formatted(.relative(presentation: .named))
-                     : "\(latest.date.formatted(.relative(presentation: .named))) · \(latest.sourceName)")
+                let when = latest.date.formatted(.relative(presentation: .named))
+                Text(latest.isOwn ? "Updated \(when)" : "Updated \(when) · \(latest.sourceName)")
                     .foregroundStyle(.secondary)
             }
             if store.isSyncing { ProgressView().controlSize(.mini) }
         }
         .font(.subheadline)
         .lineLimit(1)
+        .frame(maxWidth: .infinity)
     }
 
     private var dateButton: some View {
