@@ -11,8 +11,6 @@ struct LatestWeightCard: View {
 
     @State private var text = ""
     @State private var isEdited = false
-    @State private var customDate: Date?
-    @State private var isPickingDate = false
     @State private var isSaving = false
     @State private var savedCount = 0
     @State private var showSaved = false
@@ -34,9 +32,18 @@ struct LatestWeightCard: View {
 
     private var isValid: Bool { parsedKg.map(WeightUnit.plausibleKilograms.contains) ?? false }
 
-    private var date: Date { customDate ?? .now }
+    /// Your own reading from the last hour, which saving replaces (a quick fix for a typo or a
+    /// re-weigh) instead of adding a second one. Readings from scales or other apps are never replaced,
+    /// and backdated entries go through History's add sheet.
+    private var replacing: WeightEntry? {
+        guard let latest, latest.isOwn else { return nil }
+        let age = Date.now.timeIntervalSince(latest.date)
+        return (0..<Self.replaceWindow).contains(age) ? latest : nil
+    }
+    static let replaceWindow: TimeInterval = 3600
 
-    private var previousEntry: WeightEntry? { store.entries.last { $0.date <= date } }
+    /// What the new weight is compared with: the latest reading, or the one before it when replacing.
+    private var previousEntry: WeightEntry? { store.entries.last { $0.date <= .now && $0.id != replacing?.id } }
 
     private var latestValue: Double? { latest.map { unit.value(fromKilograms: $0.kg) } }
 
@@ -51,7 +58,7 @@ struct LatestWeightCard: View {
         VStack(spacing: 6) {
             // Both states are always laid out on top of each other, so the card is as tall as the
             // taller one and nothing below moves when you start or stop editing.
-            ZStack(alignment: .topLeading) {
+            ZStack(alignment: .top) {
                 restingTopRow.visible(!isEditing)
                 editingTopRow.visible(isEditing)
             }
@@ -102,36 +109,37 @@ struct LatestWeightCard: View {
 
     // MARK: Pieces
 
-    /// Editing: the change from your last reading (or what's wrong), and the date.
+    /// Editing: what saving will do (replace a recent reading, or the change from the last one).
     private var editingTopRow: some View {
-        HStack(alignment: .top) {
-            VStack(alignment: .leading, spacing: 3) {
-                Text("NEW WEIGHT")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                Group {
-                    if let errorMessage {
-                        Label(errorMessage, systemImage: "exclamationmark.triangle.fill").foregroundStyle(.red)
-                    } else if parsedValue != nil, !isValid {
-                        Text("Not a body weight in \(unit.name.lowercased())").foregroundStyle(.red)
-                    } else if isEdited, !isSaving, let kg = parsedKg, let previous = previousEntry {
-                        // Only for a value you entered, and not mid-save: Cancel restores the latest, and a
-                        // save makes the new reading the "previous" one, while this row fades out.
-                        HStack(spacing: 4) {
-                            ChangeBadge(kg: kg - previous.kg, unit: unit)
-                            Text("vs. \(previous.date.formatted(.relative(presentation: .named)))")
-                                .foregroundStyle(.secondary)
-                        }
-                    } else {
-                        Text(" ")   // keep this line's height so nothing shifts once you type
+        VStack(spacing: 3) {
+            Text("NEW WEIGHT")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+            Group {
+                if let errorMessage {
+                    Label(errorMessage, systemImage: "exclamationmark.triangle.fill").foregroundStyle(.red)
+                } else if parsedValue != nil, !isValid {
+                    Text("Not a body weight in \(unit.name.lowercased())").foregroundStyle(.red)
+                } else if !isSaving, let replacing {
+                    Text("\(Image(systemName: "arrow.triangle.2.circlepath")) Replaces \(unit.format(replacing.kg)) from \(replacing.date.formatted(.relative(presentation: .named, unitsStyle: .abbreviated)))")
+                        .foregroundStyle(.orange)
+                        .accessibilityIdentifier("quickLogReplaces")
+                } else if isEdited, !isSaving, let kg = parsedKg, let previous = previousEntry {
+                    // Only for a value you entered, and not mid-save: Cancel restores the latest, and a
+                    // save makes the new reading the "previous" one, while this row fades out.
+                    HStack(spacing: 4) {
+                        ChangeBadge(kg: kg - previous.kg, unit: unit)
+                        Text("vs. \(previous.date.formatted(.relative(presentation: .named)))")
+                            .foregroundStyle(.secondary)
                     }
+                } else {
+                    Text(" ")   // keep this line's height so nothing shifts once you type
                 }
-                .font(.caption)
-                .lineLimit(1)
             }
-            Spacer()
-            dateButton
+            .font(.caption)
+            .lineLimit(1)
         }
+        .frame(maxWidth: .infinity)   // centered, like "Updated …" at rest
     }
 
     /// At rest, centered over the number: "Updated 2 hours ago" (and the source, if not WeightMe).
@@ -152,39 +160,6 @@ struct LatestWeightCard: View {
         .font(.subheadline)
         .lineLimit(1)
         .frame(maxWidth: .infinity)
-    }
-
-    private var dateButton: some View {
-        Button {
-            isPickingDate = true
-        } label: {
-            HStack(spacing: 4) {
-                Text(customDate.map { $0.formatted(.dateTime.month(.abbreviated).day().hour().minute()) } ?? "Now")
-                Image(systemName: "chevron.down")
-                    .font(.caption2.weight(.bold))
-                    .rotationEffect(.degrees(isPickingDate ? 180 : 0))
-            }
-            .font(.subheadline.weight(.medium))
-        }
-        .buttonStyle(.bordered)
-        .buttonBorderShape(.capsule)
-        .controlSize(.small)
-        .accessibilityLabel("Date and time")
-        .accessibilityValue(customDate == nil ? "Now" : date.formatted())
-        .popover(isPresented: $isPickingDate) {
-            VStack(spacing: 12) {
-                DatePicker("Date & Time", selection: Binding(get: { date }, set: { customDate = $0 }), in: ...Date.now)
-                    .datePickerStyle(.graphical)
-                HStack {
-                    Button("Now") { customDate = nil; isPickingDate = false }
-                    Spacer()
-                    Button("Done") { isPickingDate = false }.fontWeight(.semibold)
-                }
-            }
-            .padding()
-            .frame(minWidth: 320)
-            .presentationCompactAdaptation(.popover)
-        }
     }
 
     private var number: some View {
@@ -235,7 +210,7 @@ struct LatestWeightCard: View {
             .buttonStyle(.bordered)
             .accessibilityIdentifier("quickLogCancel")
             Button(action: attemptSave) {
-                Text("Save").font(.headline).frame(maxWidth: .infinity)
+                Text(replacing == nil ? "Save" : "Replace").font(.headline).frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
             .disabled(!isValid || isSaving)
@@ -288,8 +263,6 @@ struct LatestWeightCard: View {
         withAnimation(.snappy) {
             isEdited = false
             fieldFocused = false
-            customDate = nil
-            isPickingDate = false
             errorMessage = nil
             text = latestValue.map(Self.format) ?? ""
         }
@@ -297,7 +270,7 @@ struct LatestWeightCard: View {
 
     private func attemptSave() {
         guard let kg = parsedKg, isValid else { return }
-        if EntryCheck.isLargeChange(kg: kg, date: date, previous: previousEntry) {
+        if EntryCheck.isLargeChange(kg: kg, date: .now, previous: previousEntry) {
             confirmingLargeChange = true
         } else {
             save()
@@ -311,8 +284,11 @@ struct LatestWeightCard: View {
         fieldFocused = false
         Task {
             do {
-                try await store.add(kg: kg, date: date)
-                // Back at rest; if this was backdated, the latest may be a different reading.
+                if let replacing {
+                    try await store.update(replacing, kg: kg, date: .now)
+                } else {
+                    try await store.add(kg: kg, date: .now)
+                }
                 cancel()
                 withAnimation { showSaved = true }
                 savedCount += 1

@@ -47,6 +47,8 @@ final class LatestWeightCardUITests: XCTestCase {
         XCTAssertGreaterThan(value(field), start, "Dragging left should increase the weight")
         XCTAssertTrue(save.waitForExistence(timeout: 2))
         XCTAssertTrue(app.staticTexts["NEW WEIGHT"].exists)
+        XCTAssertFalse(app.staticTexts["quickLogReplaces"].exists, "Demo's latest is hours old: adds, doesn't replace")
+        XCTAssertFalse(app.buttons["Date and time"].exists, "No time picker on the main card")
         snapshot(app, "41-editing")
 
         // Cancel puts it back.
@@ -72,6 +74,10 @@ final class LatestWeightCardUITests: XCTestCase {
         field.typeText("180.4")
         XCTAssertEqual(value(field), 180.4, accuracy: 0.001)
         XCTAssertTrue(save.isEnabled)
+        // The reading just saved is yours and under an hour old, so saving now replaces it.
+        let replaces = app.staticTexts["quickLogReplaces"]
+        XCTAssertTrue(replaces.exists)
+        XCTAssertTrue(replaces.label.contains(String(format: "%.1f lb", logged)), replaces.label)
         snapshot(app, "44-typing")
         cancel.tap()
         XCTAssertTrue(save.waitForNonExistence(timeout: 2))
@@ -90,5 +96,21 @@ final class LatestWeightCardUITests: XCTestCase {
         XCTAssertEqual(value(field), logged - 60, accuracy: 0.001)
         cancel.tap()
         XCTAssertEqual(value(field), logged, accuracy: 0.001)
+
+        // Replace: the recent reading is swapped for the new one rather than kept alongside it.
+        let replacement = start - 0.2
+        field.tap()
+        field.typeText(String(format: "%.1f", replacement))
+        save.tap()
+        if saveAnyway.waitForExistence(timeout: 1) { saveAnyway.tap() }
+        XCTAssertTrue(app.staticTexts["Saved to Health"].waitForExistence(timeout: 4))
+        XCTAssertEqual(value(field), replacement, accuracy: 0.001)
+        app.tabBars.buttons["History"].tap()
+        let rows = app.staticTexts.matching(NSPredicate(format: "label ENDSWITH ' lb'"))
+        XCTAssertTrue(rows.firstMatch.waitForExistence(timeout: 4))
+        let shown = (0..<min(rows.count, 4)).map { rows.element(boundBy: $0).label }
+        XCTAssertFalse(shown.contains(String(format: "%.1f lb", logged)), "Replaced reading should be gone: \(shown)")
+        XCTAssertTrue(shown.contains(String(format: "%.1f lb", replacement)), "\(shown)")
+        snapshot(app, "47-history-after-replace")
     }
 }
