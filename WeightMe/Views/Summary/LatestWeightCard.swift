@@ -109,38 +109,34 @@ struct LatestWeightCard: View {
 
     // MARK: Pieces
 
-    /// Editing: what saving will do (replace a recent reading, or the change from the last one).
+    /// Editing: one line in the same spot and font as "Updated …" at rest — what saving will do
+    /// (replace a recent reading, or the change from the last one), a problem, or just "New weight".
     private var editingTopRow: some View {
-        VStack(spacing: 3) {
-            // Same font and spot as "Updated …" at rest, so only the words change.
-            Text("New weight")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-            Group {
-                if let errorMessage {
-                    Label(errorMessage, systemImage: "exclamationmark.triangle.fill").foregroundStyle(.red)
-                } else if parsedValue != nil, !isValid {
-                    Text("Not a body weight in \(unit.name.lowercased())").foregroundStyle(.red)
-                } else if !isSaving, let replacing {
-                    Text("\(Image(systemName: "arrow.triangle.2.circlepath")) Replaces \(unit.format(replacing.kg)) from \(replacing.date.formatted(.relative(presentation: .named, unitsStyle: .abbreviated)))")
-                        .foregroundStyle(.orange)
-                        .accessibilityIdentifier("quickLogReplaces")
-                } else if isEdited, !isSaving, let kg = parsedKg, let previous = previousEntry {
-                    // Only for a value you entered, and not mid-save: Cancel restores the latest, and a
-                    // save makes the new reading the "previous" one, while this row fades out.
-                    HStack(spacing: 4) {
-                        ChangeBadge(kg: kg - previous.kg, unit: unit)
-                        Text("vs. \(previous.date.formatted(.relative(presentation: .named)))")
-                            .foregroundStyle(.secondary)
-                    }
-                } else {
-                    Text(" ")   // keep this line's height so nothing shifts once you type
+        Group {
+            if let errorMessage {
+                Label(errorMessage, systemImage: "exclamationmark.triangle.fill").foregroundStyle(.red)
+            } else if parsedValue != nil, !isValid {
+                Text("Not a body weight in \(unit.name.lowercased())").foregroundStyle(.red)
+            } else if !isSaving, let replacing {
+                Text("\(Image(systemName: "arrow.triangle.2.circlepath")) Replaces \(unit.format(replacing.kg)) from \(replacing.date.formatted(.relative(presentation: .named, unitsStyle: .abbreviated)))")
+                    .foregroundStyle(.orange)
+                    .accessibilityIdentifier("quickLogReplaces")
+            } else if isEdited, !isSaving, let kg = parsedKg, let previous = previousEntry {
+                // Only for a value you entered, and not mid-save: Cancel restores the latest, and a
+                // save makes the new reading the "previous" one, while this row fades out.
+                HStack(spacing: 4) {
+                    ChangeBadge(kg: kg - previous.kg, unit: unit, font: .subheadline)
+                    Text("vs. \(previous.date.formatted(.relative(presentation: .named)))")
+                        .foregroundStyle(.secondary)
                 }
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier("quickLogChange")
+            } else {
+                Text("New weight").foregroundStyle(.secondary)
             }
-            .font(.caption)
-            .lineLimit(1)
         }
+        .font(.subheadline)
+        .lineLimit(1)
         .frame(maxWidth: .infinity)   // centered, like "Updated …" at rest
     }
 

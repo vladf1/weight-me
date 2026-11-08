@@ -5,6 +5,7 @@ struct ChangeBadge: View {
     let kg: Double
     let unit: WeightUnit
     var suffix: String? = nil
+    var font: Font = .caption
 
     var body: some View {
         let value = unit.value(fromKilograms: kg)
@@ -16,7 +17,7 @@ struct ChangeBadge: View {
             Text(unit.formatDelta(kg))
             if let suffix { Text("· \(suffix)").foregroundStyle(.secondary) }
         }
-        .font(.caption.weight(.semibold).monospacedDigit())
+        .font(font.weight(.semibold).monospacedDigit())
         .lineLimit(1)
         .foregroundStyle(color)
     }
