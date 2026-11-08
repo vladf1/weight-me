@@ -139,21 +139,22 @@ struct SummaryScreen: View {
 
     private var rangePicker: some View {
         HStack {
-            Picker("Range", selection: Binding(get: { settings.chartRange }, set: { select($0) })) {
+            // Picking a range always shows its most recent stretch (Y = the last 365 days, M = the last month…).
+            Picker("Range", selection: Binding(get: { settings.chartRange }, set: { select($0, anchorToEnd: true) })) {
                 ForEach(ChartRange.allCases) { range in
                     Text(range.rawValue).tag(range)
                 }
             }
             .pickerStyle(.segmented)
-            if isCustomZoom {
-                Button("Reset", systemImage: "arrow.uturn.backward") { select(settings.chartRange) }
+            if isCustomZoom || isScrolledBack {
+                Button("Reset", systemImage: "arrow.uturn.backward") { select(settings.chartRange, anchorToEnd: true) }
                     .labelStyle(.iconOnly)
                     .buttonStyle(.bordered)
                     .buttonBorderShape(.circle)
                     .transition(.scale.combined(with: .opacity))
             }
         }
-        .animation(.snappy, value: isCustomZoom)
+        .animation(.snappy, value: isCustomZoom || isScrolledBack)
     }
 
     private var emptyState: some View {
@@ -188,6 +189,11 @@ struct SummaryScreen: View {
         case let (a?, b?): return abs(a - b) > 3600
         default: return true
         }
+    }
+
+    /// Scrolled away from the latest readings (tapping the selected range wouldn't bring you back).
+    private var isScrolledBack: Bool {
+        viewport.length != nil && visibleRange.upperBound < latestDataDate
     }
 
     private func initializeViewportIfNeeded() {

@@ -18,6 +18,36 @@ final class ChartInteractionUITests: XCTestCase {
         app.staticTexts.matching(NSPredicate(format: "label CONTAINS ' – '")).firstMatch.label
     }
 
+    /// Choosing a range shows its most recent stretch, even after scrolling back in time.
+    @MainActor func testPickingRangeShowsLatest() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-demo", "-chartRange", "3M", "-chartLayers", "(readings,average7,trend)"]
+        app.launch()
+
+        let chart = app.descendants(matching: .any)["weightChart"].firstMatch
+        XCTAssertTrue(chart.waitForExistence(timeout: 6))
+        let latestEnd = inViewRange(app).components(separatedBy: " – ").last!
+
+        chart.swipeRight(velocity: .slow)
+        chart.swipeRight(velocity: .slow)
+        sleep(2)
+        XCTAssertNotEqual(inViewRange(app).components(separatedBy: " – ").last, latestEnd, "Should have scrolled back")
+        XCTAssertTrue(app.buttons["Reset"].waitForExistence(timeout: 3), "Reset shows when scrolled back")
+
+        for range in ["Y", "M", "6M"] {
+            app.buttons[range].tap()
+            sleep(1)
+            XCTAssertEqual(inViewRange(app).components(separatedBy: " – ").last, latestEnd, "\(range) should end at the latest")
+            chart.swipeRight(velocity: .slow)
+            sleep(1)
+        }
+        snapshot(app, "32-range-after-scroll")
+        app.buttons["Reset"].tap()
+        sleep(1)
+        XCTAssertEqual(inViewRange(app).components(separatedBy: " – ").last, latestEnd, "Reset returns to the latest")
+        XCTAssertTrue(app.buttons["Reset"].waitForNonExistence(timeout: 3))
+    }
+
     @MainActor func testScrollZoomAndInspect() {
         let app = XCUIApplication()
         app.launchArguments = ["-demo", "-chartRange", "3M", "-chartLayers", "(readings,average7,trend)"]
