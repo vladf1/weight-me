@@ -124,12 +124,14 @@ struct EntryEditorView: View {
                         .disabled(!isValid || isSaving)
                 }
             }
-            .alert("Big change", isPresented: $confirmingLargeChange) {
-                Button("Save Anyway") { save() }
-                Button("Cancel", role: .cancel) {}
+            .alert(parsedKg.map { EntryCheck.largeChangeTitle(kg: $0, unit: unit) } ?? "",
+                   isPresented: $confirmingLargeChange) {
+                Button("Edit", role: .cancel) {}
+                Button("Save", role: .confirm) { save() }
+                    .keyboardShortcut(.defaultAction)
             } message: {
                 if let kg = parsedKg, let previous = previousEntry {
-                    Text("That's \(unit.formatDelta(kg - previous.kg)) from your previous reading of \(unit.format(previous.kg)). Is the unit right?")
+                    Text(EntryCheck.largeChangeMessage(kg: kg, previous: previous, unit: unit))
                 }
             }
             .confirmationDialog("Delete this entry from Apple Health?", isPresented: $confirmingDelete, titleVisibility: .visible) {
@@ -219,6 +221,20 @@ enum EntryCheck {
         let change = abs(kg - previous.kg)
         let days = abs(date.timeIntervalSince(previous.date)) / 86_400
         return change > max(2.5, previous.kg * 0.03) && days < 10
+    }
+
+    /// "Save 122.0 lb?"
+    static func largeChangeTitle(kg: Double, unit: WeightUnit) -> String {
+        "Save \(unit.format(kg))?"
+    }
+
+    /// "That's 76.1 lb less than your 198.1 lb reading from 2 days ago."
+    static func largeChangeMessage(kg: Double, previous: WeightEntry, unit: WeightUnit, now: Date = .now) -> String {
+        let direction = kg < previous.kg ? "less" : "more"
+        let formatter = RelativeDateTimeFormatter()
+        formatter.dateTimeStyle = .named
+        let when = formatter.localizedString(for: previous.date, relativeTo: now)
+        return "That's \(unit.format(abs(kg - previous.kg))) \(direction) than your \(unit.format(previous.kg)) reading from \(when)."
     }
 }
 

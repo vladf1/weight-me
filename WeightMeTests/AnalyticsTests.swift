@@ -149,3 +149,18 @@ struct FullResyncTests {
         #expect(store.lastFullSync != nil)
     }
 }
+
+struct LargeChangeWordingTests {
+    @Test func saysHowMuchLessAndWhen() {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let previous = WeightEntry(date: now.addingTimeInterval(-2 * 86_400), kg: WeightUnit.pounds.kilograms(from: 198.1),
+                                   sourceName: "t", sourceBundleID: "t", isOwn: true)
+        let kg = WeightUnit.pounds.kilograms(from: 122.0)
+        #expect(EntryCheck.isLargeChange(kg: kg, date: now, previous: previous))
+        #expect(EntryCheck.largeChangeTitle(kg: kg, unit: .pounds) == "Save 122.0 lb?")
+        #expect(EntryCheck.largeChangeMessage(kg: kg, previous: previous, unit: .pounds, now: now)
+                == "That's 76.1 lb less than your 198.1 lb reading from 2 days ago.")
+        let more = EntryCheck.largeChangeMessage(kg: previous.kg + 10, previous: previous, unit: .kilograms, now: now)
+        #expect(more.hasPrefix("That's 10.0 kg more than"))
+    }
+}

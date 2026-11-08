@@ -33,8 +33,7 @@ final class LatestWeightCardUITests: XCTestCase {
         // At rest: the latest weight, no Save/Cancel.
         let field = app.textFields["quickLogField"]
         XCTAssertTrue(field.waitForExistence(timeout: 6))
-        XCTAssertTrue(app.staticTexts["LATEST"].exists)
-        XCTAssertTrue(app.staticTexts["7-DAY AVERAGE"].exists)
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH '7-day average'")).firstMatch.exists)
         let save = app.buttons["quickLogSave"]
         let cancel = app.buttons["quickLogCancel"]
         XCTAssertFalse(save.exists)
@@ -59,7 +58,7 @@ final class LatestWeightCardUITests: XCTestCase {
         dragRulerUp(app)
         let logged = value(field)
         save.tap()
-        let saveAnyway = app.buttons["Save Anyway"]
+        let saveAnyway = app.alerts.buttons["Save"]
         if saveAnyway.waitForExistence(timeout: 1) { saveAnyway.tap() }
         XCTAssertTrue(app.staticTexts["Saved to Health"].waitForExistence(timeout: 4))
         XCTAssertFalse(save.exists)
@@ -76,6 +75,20 @@ final class LatestWeightCardUITests: XCTestCase {
         snapshot(app, "44-typing")
         cancel.tap()
         XCTAssertTrue(save.waitForNonExistence(timeout: 2))
+        XCTAssertEqual(value(field), logged, accuracy: 0.001)
+
+        // A big jump asks first; Edit goes back to the number without saving.
+        field.tap()
+        field.typeText(String(format: "%.1f", logged - 60))
+        save.tap()
+        let alert = app.alerts.firstMatch
+        XCTAssertTrue(alert.waitForExistence(timeout: 3))
+        XCTAssertTrue(alert.staticTexts["Save \(String(format: "%.1f", logged - 60)) lb?"].exists)
+        snapshot(app, "45-big-change")
+        alert.buttons["Edit"].tap()
+        XCTAssertTrue(save.waitForExistence(timeout: 2))
+        XCTAssertEqual(value(field), logged - 60, accuracy: 0.001)
+        cancel.tap()
         XCTAssertEqual(value(field), logged, accuracy: 0.001)
     }
 }

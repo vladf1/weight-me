@@ -8,7 +8,6 @@ import SwiftUI
 struct LatestWeightCard: View {
     @Environment(WeightStore.self) private var store
     @Environment(AppSettings.self) private var settings
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     @State private var text = ""
     @State private var isEdited = false
@@ -70,7 +69,7 @@ struct LatestWeightCard: View {
                 .frame(height: 54)
 
             ZStack {
-                hint.visible(!isEditing)
+                summary.visible(!isEditing)
                 buttons.visible(isEditing)
             }
         }
@@ -88,12 +87,14 @@ struct LatestWeightCard: View {
                 cancel()
             }
         }
-        .alert("Big change", isPresented: $confirmingLargeChange) {
-            Button("Save Anyway") { save() }
-            Button("Cancel", role: .cancel) {}
+        .alert(parsedKg.map { EntryCheck.largeChangeTitle(kg: $0, unit: unit) } ?? "",
+               isPresented: $confirmingLargeChange) {
+            Button("Edit", role: .cancel) {}
+            Button("Save", role: .confirm) { save() }
+                .keyboardShortcut(.defaultAction)
         } message: {
             if let kg = parsedKg, let previous = previousEntry {
-                Text("That's \(unit.formatDelta(kg - previous.kg)) from your previous reading of \(unit.format(previous.kg)). Is the unit right?")
+                Text(EntryCheck.largeChangeMessage(kg: kg, previous: previous, unit: unit))
             }
         }
     }
@@ -118,6 +119,8 @@ struct LatestWeightCard: View {
                             Text("vs. \(previous.date.formatted(.relative(presentation: .named)))")
                                 .foregroundStyle(.secondary)
                         }
+                    } else {
+                        Text(" ")   // keep this line's height so nothing shifts once you type
                     }
                 }
                 .font(.caption)
@@ -128,52 +131,24 @@ struct LatestWeightCard: View {
         }
     }
 
-    /// At rest: where the latest came from, and the 7-day average.
+    /// At rest: when the latest was taken (and by what, if not WeightMe).
     private var restingTopRow: some View {
-            AdaptiveStack(horizontalAlignment: .top, spacing: dynamicTypeSize.isAccessibilitySize ? 8 : nil) {
-                VStack(alignment: .leading, spacing: 3) {
-                    HStack(spacing: 6) {
-                        Text("LATEST")
-                        if store.isSyncing { ProgressView().controlSize(.mini) }
-                    }
-                    .font(.caption.weight(.semibold))
+        HStack(spacing: 6) {
+            // One line, so this row's height never changes (see `visible`).
+            if showSaved {
+                Text("\(Image(systemName: "checkmark.circle.fill")) Saved to Health")
+                    .foregroundStyle(.green)
+                    .accessibilityLabel("Saved to Health")
+            } else if let latest {
+                Text(latest.isOwn
+                     ? latest.date.formatted(.relative(presentation: .named))
+                     : "\(latest.date.formatted(.relative(presentation: .named))) · \(latest.sourceName)")
                     .foregroundStyle(.secondary)
-                    // One line each, so this row's height never changes (see `visible`).
-                    if showSaved {
-                        Text("\(Image(systemName: "checkmark.circle.fill")) Saved to Health")
-                            .font(.subheadline)
-                            .foregroundStyle(.green)
-                            .lineLimit(1)
-                            .accessibilityLabel("Saved to Health")
-                    } else if let latest {
-                        Text("\(latest.date.formatted(.relative(presentation: .named))) · \(latest.sourceName)")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                    }
-                }
-                if !dynamicTypeSize.isAccessibilitySize { Spacer(minLength: 8) }
-                if let recent = Analytics.recentAverage(series.readings, days: 7) {
-                    VStack(alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .trailing, spacing: 3) {
-                        Text("7-DAY AVERAGE")
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                        HStack(spacing: 4) {
-                            Text(unit.format(recent.kg))
-                                .fontWeight(.semibold)
-                                .foregroundStyle(ChartPalette.color(for: .average7))
-                            Text("· \(recent.count == 1 ? "1 reading" : "\(recent.count) readings")")
-                                .foregroundStyle(.secondary)
-                        }
-                        .font(.subheadline.monospacedDigit())
-                        .lineLimit(1)
-                        .layoutPriority(1)
-                        if let change = change30 {
-                            ChangeBadge(kg: change, unit: unit, suffix: "vs. 30 days ago")
-                        }
-                    }
-                }
             }
+            if store.isSyncing { ProgressView().controlSize(.mini) }
+        }
+        .font(.subheadline)
+        .lineLimit(1)
     }
 
     private var dateButton: some View {
@@ -267,11 +242,24 @@ struct LatestWeightCard: View {
         .controlSize(.large)
     }
 
-    private var hint: some View {
-        Text(latest == nil ? "Drag the ruler or tap to enter your weight." : "Drag the ruler or tap the number to log a new weight.")
-            .font(.caption)
-            .foregroundStyle(.secondary)
-            .multilineTextAlignment(.center)
+    /// At rest, in the space the editing buttons use: the 7-day average and its 30-day change.
+    private var summary: some View {
+        VStack(spacing: 4) {
+            if let recent = Analytics.recentAverage(series.readings, days: 7) {
+                Text("7-day average \(Text(unit.format(recent.kg)).fontWeight(.semibold).foregroundStyle(ChartPalette.color(for: .average7)))")
+                    .monospacedDigit()
+                if let change = change30 {
+                    ChangeBadge(kg: change, unit: unit, suffix: "vs. 30 days ago")
+                }
+            } else {
+                Text("Drag the ruler or tap the number to log your weight.")
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .font(.subheadline)
+        .foregroundStyle(.secondary)
+        .lineLimit(1)
+        .frame(maxWidth: .infinity)
     }
 
     // MARK: Actions

@@ -73,7 +73,7 @@ final class HealthFlowUITests: XCTestCase {
         let app = launch()
         connectIfNeeded(app)
         // Either the chart (data present) or the empty state should appear.
-        let ready = app.staticTexts["LATEST"].waitForExistence(timeout: 8)
+        let ready = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH '7-day average'")).firstMatch.waitForExistence(timeout: 8)
             || app.staticTexts["No Weight Data Yet"].waitForExistence(timeout: 2)
         snapshot(app, "01-after-connect")
         XCTAssertTrue(ready, "Expected chart or empty state after connecting Health")
@@ -97,7 +97,7 @@ final class HealthFlowUITests: XCTestCase {
         snapshot(app, "02-settings-after-seed")
 
         let relaunched = launch(["-chartRange", "Y"])
-        XCTAssertTrue(relaunched.staticTexts["LATEST"].waitForExistence(timeout: 15))
+        XCTAssertTrue(relaunched.staticTexts.matching(NSPredicate(format: "label BEGINSWITH '7-day average'")).firstMatch.waitForExistence(timeout: 15))
         sleep(2)
         snapshot(relaunched, "03-chart-with-health-data")
     }
@@ -156,7 +156,7 @@ final class HealthFlowUITests: XCTestCase {
         snapshot(app, "20-log-weight")
         app.buttons["Save"].tap()
         // Big-change confirmation may appear, since seeded data is ~180 lb.
-        let saveAnyway = app.buttons["Save Anyway"]
+        let saveAnyway = app.alerts.buttons["Save"]
         if saveAnyway.waitForExistence(timeout: 2) { saveAnyway.tap() }
 
         // It should now be the latest reading.
