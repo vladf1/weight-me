@@ -68,10 +68,12 @@ final class LatestWeightCardUITests: XCTestCase {
 
         // Tap the number to type over it; Cancel restores.
         field.tap()
+        sleep(1)
+        snapshot(app, "43-focused-empty")
         field.typeText("180.4")
         XCTAssertEqual(value(field), 180.4, accuracy: 0.001)
         XCTAssertTrue(save.isEnabled)
-        snapshot(app, "43-typing")
+        snapshot(app, "44-typing")
         cancel.tap()
         XCTAssertTrue(save.waitForNonExistence(timeout: 2))
         XCTAssertEqual(value(field), logged, accuracy: 0.001)

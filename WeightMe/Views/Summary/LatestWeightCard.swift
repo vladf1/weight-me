@@ -233,8 +233,17 @@ struct LatestWeightCard: View {
                 .foregroundStyle(.secondary)
                 .fixedSize()
         }
+        .padding(.horizontal, 16)
         // Fixed height: a focused text field is a little taller, which would nudge everything below.
-        .frame(maxWidth: .infinity, minHeight: 72, maxHeight: 72)
+        .frame(minWidth: 200, minHeight: 72, maxHeight: 72)
+        // While typing, look like a text field: a lighter box with an accent outline.
+        .background {
+            let box = RoundedRectangle(cornerRadius: 14, style: .continuous)
+            box.fill(Color(.systemBackground))
+                .overlay(box.strokeBorder(Color.accentColor, lineWidth: 2))
+                .opacity(fieldFocused ? 1 : 0)
+        }
+        .frame(maxWidth: .infinity)
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .contentShape(Rectangle())
         .onTapGesture { fieldFocused = true }
