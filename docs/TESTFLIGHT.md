@@ -101,7 +101,7 @@ in the TestFlight app on your iPhone/iPad once you're in the internal group.
 
 ## Later
 
-- **Version numbers**: `MARKETING_VERSION` in `project.yml` (currently 0.1.0). Bump it after a version is
+- **Version numbers**: `MARKETING_VERSION` in `project.yml` (currently 1.0, matching the App Store Connect version). Bump it after a version is
   released on the App Store; the build number always comes from the workflow run.
 - **External testers** need Beta App Review: fill in TestFlight › Test Information (beta description,
   feedback email, privacy policy URL).
