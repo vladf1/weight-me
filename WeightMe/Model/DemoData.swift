@@ -46,11 +46,15 @@ enum DemoData {
             let minute = Int.random(in: 0..<50, using: &rng)
             let stamp = calendar.date(bySettingHour: source.hour, minute: minute, second: 0, of: date)!
             let lb = (trueWeight(day) + noise) * 10
-            result.append(WeightEntry(date: stamp, kg: WeightUnit.pounds.kilograms(from: lb.rounded() / 10),
-                                      sourceName: source.name, sourceBundleID: source.bundle, isOwn: source.own))
-            // Occasional second weigh-in later the same day.
-            if Double.random(in: 0...1, using: &rng) < 0.06 {
-                let evening = calendar.date(bySettingHour: 21, minute: minute, second: 0, of: date)!
+            // Nothing later than `end` (today's 7 AM reading doesn't exist yet at 2 AM).
+            if stamp <= end {
+                result.append(WeightEntry(date: stamp, kg: WeightUnit.pounds.kilograms(from: lb.rounded() / 10),
+                                          sourceName: source.name, sourceBundleID: source.bundle, isOwn: source.own))
+            }
+            // Occasional second weigh-in later the same day. (Draw first so the sequence stays the same.)
+            let secondWeighIn = Double.random(in: 0...1, using: &rng) < 0.06
+            if secondWeighIn, let evening = calendar.date(bySettingHour: 21, minute: minute, second: 0, of: date),
+               evening <= end {
                 let lb2 = ((trueWeight(day) + noise + 1.6) * 10).rounded() / 10
                 result.append(WeightEntry(date: evening, kg: WeightUnit.pounds.kilograms(from: lb2),
                                           sourceName: "Health", sourceBundleID: "com.apple.Health", isOwn: false))

@@ -164,3 +164,12 @@ struct LargeChangeWordingTests {
         #expect(more.hasPrefix("That's 10.0 kg more than"))
     }
 }
+
+struct DemoDataTests {
+    @Test func nothingAfterTheEndTime() {
+        let end = Calendar.current.date(bySettingHour: 2, minute: 0, second: 0, of: .now)!
+        let entries = DemoData.entries(endingAt: end)
+        #expect(!entries.isEmpty)
+        #expect(entries.allSatisfy { $0.date <= end })
+    }
+}
