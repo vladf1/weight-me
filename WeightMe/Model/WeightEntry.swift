@@ -36,10 +36,10 @@ nonisolated enum SameDayHandling: String, CaseIterable, Codable, Identifiable, S
 
     var title: String {
         switch self {
-        case .all: "Every reading"
-        case .average: "Daily average"
-        case .first: "First of the day"
-        case .lowest: "Lowest of the day"
+        case .all: "Show all"
+        case .average: "Average"
+        case .first: "First only"
+        case .lowest: "Lowest only"
         }
     }
 

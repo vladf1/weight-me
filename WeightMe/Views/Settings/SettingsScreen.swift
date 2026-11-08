@@ -15,10 +15,10 @@ struct SettingsScreen: View {
         @Bindable var router = router
         Form {
             Section("Units") {
-                Picker("Show weights in", selection: $settings.unitPreference) {
+                Picker("Weight unit", selection: $settings.unitPreference) {
                     ForEach(AppSettings.UnitPreference.allCases) { pref in
                         if pref == .health {
-                            Text("Match Apple Health (\(settings.healthUnit.symbol))").tag(pref)
+                            Text("Same as Health (\(settings.healthUnit.symbol))").tag(pref)
                         } else {
                             Text(pref.title).tag(pref)
                         }
@@ -35,19 +35,19 @@ struct SettingsScreen: View {
                     }
                 }
                 .foregroundStyle(.primary)
-                Picker("Projection based on last", selection: $settings.projectionWindowDays) {
-                    ForEach([14, 30, 60, 90], id: \.self) { Text("\($0) days").tag($0) }
+                Picker("Projection", selection: $settings.projectionWindowDays) {
+                    ForEach([14, 30, 60, 90], id: \.self) { Text("Last \($0) days").tag($0) }
                 }
             }
 
             Section {
-                Picker("Multiple readings per day", selection: $settings.sameDay) {
+                Picker("Same-day readings", selection: $settings.sameDay) {
                     ForEach(SameDayHandling.allCases) { Text($0.title).tag($0) }
                 }
                 Picker("Trend smoothing", selection: $settings.trendSmoothing) {
-                    Text("Gentle (5%)").tag(0.05)
-                    Text("Standard (10%)").tag(0.1)
-                    Text("Responsive (20%)").tag(0.2)
+                    Text("Gentle").tag(0.05)
+                    Text("Standard").tag(0.1)
+                    Text("Responsive").tag(0.2)
                 }
             } header: {
                 Text("Graph")

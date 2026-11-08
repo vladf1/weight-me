@@ -9,9 +9,9 @@ final class AppSettings {
         var id: String { rawValue }
         var title: String {
             switch self {
-            case .health: "Match Apple Health"
-            case .pounds: "Pounds (lb)"
-            case .kilograms: "Kilograms (kg)"
+            case .health: "Same as Health"
+            case .pounds: "Pounds"
+            case .kilograms: "Kilograms"
             }
         }
     }
