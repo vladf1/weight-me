@@ -59,3 +59,14 @@ struct IntentTests {
         _ = try await GetLatestWeightIntent().perform()
     }
 }
+
+/// App Store Connect rejects uploads whose App Intent descriptions contain "Apple" (error 90626).
+struct IntentMetadataTests {
+    @Test func descriptionsDontMentionApple() {
+        let descriptions = [LogWeightIntent.description, GetLatestWeightIntent.description, OpenLogWeightIntent.description]
+        for description in descriptions {
+            let text = String(localized: description.descriptionText)
+            #expect(!text.localizedCaseInsensitiveContains("apple"), "\(text)")
+        }
+    }
+}

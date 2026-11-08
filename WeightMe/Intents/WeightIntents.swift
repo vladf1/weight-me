@@ -16,7 +16,7 @@ enum WeightIntentError: Error, CustomLocalizedStringResourceConvertible {
 /// "Log my weight in WeightMe" — saves straight to Apple Health without opening the app.
 struct LogWeightIntent: AppIntent {
     static let title: LocalizedStringResource = "Log Weight"
-    static let description = IntentDescription("Saves a weight entry to Apple Health.", categoryName: "Weight")
+    static let description = IntentDescription("Saves a weight entry to the Health app.", categoryName: "Weight")
 
     @Parameter(title: "Weight", requestValueDialog: IntentDialog("What's your weight?"))
     var weight: Measurement<UnitMass>
@@ -48,7 +48,7 @@ struct LogWeightIntent: AppIntent {
 /// "What's my weight in WeightMe?"
 struct GetLatestWeightIntent: AppIntent {
     static let title: LocalizedStringResource = "Get Latest Weight"
-    static let description = IntentDescription("Returns your most recent weight and trend from Apple Health.", categoryName: "Weight")
+    static let description = IntentDescription("Returns your most recent weight and trend from the Health app.", categoryName: "Weight")
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog & ReturnsValue<Measurement<UnitMass>> {
