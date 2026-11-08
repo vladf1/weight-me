@@ -48,7 +48,7 @@ struct LatestWeightCard: View {
     }
 
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 6) {
             // Both states are always laid out on top of each other, so the card is as tall as the
             // taller one and nothing below moves when you start or stop editing.
             ZStack(alignment: .topLeading) {
@@ -66,14 +66,15 @@ struct LatestWeightCard: View {
                                            fieldFocused = false
                                        }),
                         range: displayRange)
-                .frame(height: 54)
+                .frame(height: 44)
 
             ZStack {
                 summary.visible(!isEditing)
                 buttons.visible(isEditing)
             }
         }
-        .padding()
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
         .background(.background.secondary, in: RoundedRectangle(cornerRadius: 16))
         .animation(.snappy, value: isEditing)
         .sensoryFeedback(.success, trigger: savedCount)
@@ -189,7 +190,7 @@ struct LatestWeightCard: View {
     private var number: some View {
         HStack(alignment: .firstTextBaseline, spacing: 6) {
             TextField(latestValue.map(Self.format) ?? "—", text: $text)
-                .font(.system(size: 56, weight: .bold, design: .rounded).monospacedDigit())
+                .font(.system(size: 52, weight: .bold, design: .rounded).monospacedDigit())
                 .multilineTextAlignment(.center)
                 .keyboardType(.decimalPad)
                 .focused($fieldFocused)
@@ -212,7 +213,7 @@ struct LatestWeightCard: View {
         }
         .padding(.horizontal, 16)
         // Fixed height: a focused text field is a little taller, which would nudge everything below.
-        .frame(minWidth: 200, minHeight: 72, maxHeight: 72)
+        .frame(minWidth: 200, minHeight: 62, maxHeight: 62)
         // While typing, look like a text field: a lighter box with an accent outline.
         .background {
             let box = RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -229,12 +230,12 @@ struct LatestWeightCard: View {
     private var buttons: some View {
         HStack(spacing: 12) {
             Button(action: cancel) {
-                Text("Cancel").font(.headline).frame(maxWidth: .infinity).padding(.vertical, 4)
+                Text("Cancel").font(.headline).frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
             .accessibilityIdentifier("quickLogCancel")
             Button(action: attemptSave) {
-                Text("Save").font(.headline).frame(maxWidth: .infinity).padding(.vertical, 4)
+                Text("Save").font(.headline).frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
             .disabled(!isValid || isSaving)
@@ -378,7 +379,7 @@ struct WeightRuler: View {
                            startPoint: .leading, endPoint: .trailing)
         }
         .overlay(alignment: .top) {
-            Capsule().fill(Color.accentColor).frame(width: 3, height: 34)
+            Capsule().fill(Color.accentColor).frame(width: 3, height: 30)
         }
         .contentShape(Rectangle())
         .gesture(
