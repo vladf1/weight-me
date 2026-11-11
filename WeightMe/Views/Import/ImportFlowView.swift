@@ -535,7 +535,6 @@ struct FinalImportConfirmation: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var typed = ""
-    @State private var acknowledged = false
     @FocusState private var focused: Bool
 
     private var matches: Bool { typed.trimmingCharacters(in: .whitespaces) == String(plan.importCount) }
@@ -557,7 +556,6 @@ struct FinalImportConfirmation: View {
                     .padding(.vertical, 4)
                 }
                 Section {
-                    Toggle("I've reviewed the rows and the unit is correct", isOn: $acknowledged)
                     TextField("Type \(plan.importCount) to confirm", text: $typed)
                         .keyboardType(.numberPad)
                         .focused($focused)
@@ -579,7 +577,7 @@ struct FinalImportConfirmation: View {
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .tint(.orange)
-                .disabled(!(matches && acknowledged))
+                .disabled(!matches)
                 .padding()
                 .background(.bar)
             }

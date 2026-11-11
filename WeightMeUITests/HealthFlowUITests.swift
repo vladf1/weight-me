@@ -114,14 +114,11 @@ final class HealthFlowUITests: XCTestCase {
 
         importButton.tap()
 
-        // Final check: acknowledge + type the count.
+        // Final check: type the count.
         let add = app.buttons["Add \(count) Entries to Apple Health"]
         XCTAssertTrue(add.waitForExistence(timeout: 6))
         XCTAssertFalse(add.isEnabled, "Final button must start disabled")
-        let toggle = app.switches.firstMatch
-        toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
-        XCTAssertEqual(toggle.value as? String, "1", "Acknowledgement toggle should be on")
-        XCTAssertFalse(add.isEnabled, "Toggle alone must not enable import")
+        XCTAssertFalse(app.switches.firstMatch.exists, "No acknowledgement toggle on the final check")
         let field = app.textFields["Type \(count) to confirm"]
         field.tap()
         field.typeText("1")
