@@ -119,6 +119,7 @@ final class HealthFlowUITests: XCTestCase {
         XCTAssertTrue(add.waitForExistence(timeout: 6))
         XCTAssertFalse(add.isEnabled, "Final button must start disabled")
         XCTAssertFalse(app.switches.firstMatch.exists, "No acknowledgement toggle on the final check")
+        snapshot(app, "11-import-final-empty")
         let field = app.textFields["Type \(count) to confirm"]
         field.tap()
         field.typeText("1")

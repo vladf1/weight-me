@@ -556,10 +556,16 @@ struct FinalImportConfirmation: View {
                     .padding(.vertical, 4)
                 }
                 Section {
-                    TextField("Type \(plan.importCount) to confirm", text: $typed)
+                    TextField(String(plan.importCount), text: $typed)
                         .keyboardType(.numberPad)
                         .focused($focused)
                         .font(.title3.monospacedDigit())
+                        .accessibilityLabel("Type \(plan.importCount) to confirm")
+                } header: {
+                    // Stays visible while typing, unlike the placeholder.
+                    Text("Type **\(plan.importCount)** to confirm")
+                        .textCase(nil)
+                        .font(.subheadline)
                 } footer: {
                     Text("You can undo this import later from Settings › Import History.")
                 }
