@@ -63,3 +63,19 @@ struct YAxisScale: Equatable {
         return nice * magnitude
     }
 }
+
+/// Page and panel colors: a gray page with lighter panels on top (white in light mode).
+enum Surface {
+    static let page = Color(.systemGroupedBackground)
+    static let panel = Color(.secondarySystemGroupedBackground)
+}
+
+extension View {
+    /// A panel with the same 1px outline and faint shadow as the range picker.
+    func panelBackground(cornerRadius: CGFloat = 16) -> some View {
+        let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+        return background(Surface.panel, in: shape)
+            .overlay(shape.strokeBorder(Color(.systemGray4), lineWidth: 1))
+            .shadow(color: .black.opacity(0.06), radius: 6, y: 2)
+    }
+}

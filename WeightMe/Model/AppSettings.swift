@@ -67,7 +67,7 @@ final class AppSettings {
         if let stored = defaults.stringArray(forKey: Keys.layers) {
             visibleLayers = Set(stored.compactMap(ChartLayer.init(rawValue:)))
         } else {
-            visibleLayers = [.readings, .average7, .trend, .goal]
+            visibleLayers = [.readings, .goal]
         }
     }
 
@@ -84,7 +84,8 @@ final class AppSettings {
         static let smoothing = "trendSmoothing"
         static let projectionWindow = "projectionWindowDays"
         static let range = "chartRange"
-        static let layers = "chartLayers"
+        // v2: the default changed to entries + goal; older saved choices are dropped once.
+        static let layers = "chartLayers.v2"
     }
 }
 

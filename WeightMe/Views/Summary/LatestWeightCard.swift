@@ -86,7 +86,7 @@ struct LatestWeightCard: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(.background.secondary, in: RoundedRectangle(cornerRadius: 16))
+        .panelBackground()
         .animation(.snappy, value: isEditing)
         .sensoryFeedback(.success, trigger: savedCount)
         .onAppear(perform: syncFromLatest)

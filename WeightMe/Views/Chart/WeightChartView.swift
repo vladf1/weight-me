@@ -97,18 +97,12 @@ struct WeightChartView: View {
             }
 
             if layers.contains(.readings) {
-                let showLine = visibleReadings.count <= 120
-                let size = pointSize(visibleCount: visibleReadings.count)
-                let opacity = visibleReadings.count > 300 ? 0.45 : 0.8
+                // A plain line through every entry. It steps back when a smoothed line is on top of it.
+                let isMain = lineLayers.isEmpty
                 ForEach(readings) { p in
-                    if showLine {
-                        LineMark(x: .value("Date", p.date), y: .value("Weight", p.kg), series: .value("Series", "readings"))
-                            .foregroundStyle(Color.gray.opacity(0.3))
-                            .lineStyle(StrokeStyle(lineWidth: 1))
-                    }
-                    PointMark(x: .value("Date", p.date), y: .value("Weight", p.kg))
-                        .symbolSize(size)
-                        .foregroundStyle(Color.gray.opacity(opacity))
+                    LineMark(x: .value("Date", p.date), y: .value("Weight", p.kg), series: .value("Series", "readings"))
+                        .foregroundStyle(Color.gray.opacity(isMain ? 0.9 : 0.35))
+                        .lineStyle(StrokeStyle(lineWidth: isMain ? 2.5 : 1.5, lineCap: .round, lineJoin: .round))
                 }
             }
 
@@ -180,6 +174,9 @@ struct WeightChartView: View {
             // Overlays rather than mark annotations: scrollable charts clip annotations and a
             // rule's leading annotation scrolls off-screen with the start of the data.
             ZStack(alignment: .topLeading) {
+                if layers.contains(.readings), selection == nil {
+                    EndpointLabels(proxy: proxy, visible: visibleReadings, leftEdge: visibleRange.lowerBound, unit: unit)
+                }
                 if layers.contains(.goal), let goalKg, let y = proxy.position(forY: goalKg),
                    y >= 14, y <= proxy.plotSize.height {
                     Text("Goal \(unit.format(goalKg))")
@@ -230,15 +227,6 @@ struct WeightChartView: View {
 
     // MARK: Helpers
 
-    private func pointSize(visibleCount: Int) -> CGFloat {
-        switch visibleCount {
-        case ..<40: 36
-        case ..<120: 22
-        case ..<400: 12
-        default: 6
-        }
-    }
-
     private var visibleDays: Double { visibleLength / 86_400 }
 
     /// Month-wide bars only make sense when several months are on screen.
@@ -271,7 +259,8 @@ struct WeightChartView: View {
         }
         var ticks: [Date] = []
         while tick <= window.upperBound, ticks.count < 120 {
-            ticks.append(tick)
+            // A tick before the first reading would put its label left of the plot, outside the card.
+            if tick >= domain.lowerBound { ticks.append(tick) }
             tick = calendar.date(byAdding: component, value: count, to: tick)!
         }
         return ticks
@@ -323,6 +312,89 @@ struct WeightChartView: View {
             }
         }
         return YAxisScale.make(minKg: lo, maxKg: hi, unit: unit)
+    }
+}
+
+/// Value tags on the first and last entry on screen: the first sits at the left edge pointing at
+/// its level, the last sits above its point.
+private struct EndpointLabels: View {
+    let proxy: ChartProxy
+    let visible: ArraySlice<SeriesPoint>
+    let leftEdge: Date
+    let unit: WeightUnit
+
+    var body: some View {
+        // Positions are measured from the left edge of what's on screen, so this works whether
+        // the proxy reports scrolled-content or on-screen coordinates.
+        let plot = proxy.plotSize
+        if let first = visible.first, let last = visible.last,
+           let x0 = proxy.position(forX: leftEdge),
+           let firstY = proxy.position(forY: first.kg),
+           let lastX = proxy.position(forX: last.date).map({ $0 - x0 }),
+           let lastY = proxy.position(forY: last.kg) {
+            // Each tag sits in a zero-height, plot-wide strip placed at its point's height.
+            ZStack {
+                if visible.count > 1 {
+                    tag(first.kg, pointer: .left)
+                        .fixedSize()
+                        .frame(width: plot.width, height: 0, alignment: .leading)
+                        .position(x: plot.width / 2, y: firstY)
+                }
+                // The bubble slides to stay inside the plot; the arrow and dot stay on the point.
+                tag(last.kg, pointer: nil)
+                    .fixedSize()
+                    .alignmentGuide(HorizontalAlignment.center) { d in
+                        let left = min(max(lastX - d.width / 2, 0), plot.width - d.width)
+                        return plot.width / 2 - left
+                    }
+                    .frame(width: plot.width, height: 0, alignment: .bottom)
+                    .position(x: plot.width / 2, y: lastY - 12)
+                Triangle()
+                    .rotation(.degrees(180))
+                    .fill(Color.accentColor)
+                    .frame(width: 10, height: 6)
+                    .position(x: min(max(lastX, 8), plot.width - 8), y: lastY - 10)
+                Circle()
+                    .fill(Color.accentColor)
+                    .overlay(Circle().strokeBorder(.background, lineWidth: 1.5))
+                    .frame(width: 10, height: 10)
+                    .position(x: lastX, y: lastY)
+            }
+            .frame(width: plot.width, height: plot.height)
+        }
+    }
+
+    private enum Pointer { case left }
+
+    private func tag(_ kg: Double, pointer: Pointer?) -> some View {
+        let text = Text(unit.format(kg, includeUnit: false))
+            .font(.footnote.weight(.semibold).monospacedDigit())
+            .foregroundStyle(.white)
+            .padding(.horizontal, 7)
+            .padding(.vertical, 3)
+            .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 6))
+        return Group {
+            switch pointer {
+            case .left:
+                HStack(spacing: -1) {
+                    Triangle().rotation(.degrees(-90)).fill(Color.accentColor).frame(width: 8, height: 6)
+                    text
+                }
+            case nil:
+                text
+            }
+        }
+    }
+}
+
+nonisolated private struct Triangle: Shape {
+    func path(in rect: CGRect) -> Path {
+        Path { p in
+            p.move(to: CGPoint(x: rect.midX, y: rect.minY))
+            p.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+            p.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+            p.closeSubpath()
+        }
     }
 }
 

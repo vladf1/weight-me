@@ -112,7 +112,7 @@ struct StatsPanel: View {
             }
         }
         .padding()
-        .background(.background.secondary, in: RoundedRectangle(cornerRadius: 16))
+        .panelBackground()
     }
 
     private var rangeText: String {
@@ -145,7 +145,7 @@ struct StatTile: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(10)
-        .background(.background, in: RoundedRectangle(cornerRadius: 12))
+        .background(Surface.page, in: RoundedRectangle(cornerRadius: 12))
     }
 }
 
@@ -192,7 +192,7 @@ struct GoalCard: View {
             }
         }
         .padding()
-        .background(.background.secondary, in: RoundedRectangle(cornerRadius: 16))
+        .panelBackground()
     }
 
     private func projectionText(goal: Double, current: Double) -> String {

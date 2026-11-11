@@ -21,7 +21,7 @@ final class ChartInteractionUITests: XCTestCase {
     /// Choosing a range shows its most recent stretch, even after scrolling back in time.
     @MainActor func testPickingRangeShowsLatest() {
         let app = XCUIApplication()
-        app.launchArguments = ["-demo", "-chartRange", "3M", "-chartLayers", "(readings,average7,trend)"]
+        app.launchArguments = ["-demo", "-chartRange", "3M", "-chartLayers.v2", "(readings,average7,trend)"]
         app.launch()
 
         let chart = app.descendants(matching: .any)["weightChart"].firstMatch
@@ -50,7 +50,7 @@ final class ChartInteractionUITests: XCTestCase {
 
     @MainActor func testScrollZoomAndInspect() {
         let app = XCUIApplication()
-        app.launchArguments = ["-demo", "-chartRange", "3M", "-chartLayers", "(readings,average7,trend)"]
+        app.launchArguments = ["-demo", "-chartRange", "3M", "-chartLayers.v2", "(readings,average7,trend)"]
         app.launch()
 
         let chart = app.descendants(matching: .any)["weightChart"].firstMatch
@@ -77,7 +77,7 @@ final class ChartInteractionUITests: XCTestCase {
 
         // Deterministic callout screenshot via the debug preselection hook.
         app.terminate()
-        app.launchArguments = ["-demo", "-chartRange", "M", "-chartLayers", "(readings,average7,trend)", "-selectDaysAgo", "12"]
+        app.launchArguments = ["-demo", "-chartRange", "M", "-chartLayers.v2", "(readings,average7,trend)", "-selectDaysAgo", "12"]
         app.launch()
         // Chart annotations aren't exposed to accessibility individually; verify visually.
         XCTAssertTrue(app.descendants(matching: .any)["weightChart"].firstMatch.waitForExistence(timeout: 6))

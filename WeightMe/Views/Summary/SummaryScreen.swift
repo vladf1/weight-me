@@ -26,6 +26,7 @@ struct SummaryScreen: View {
         }
         .scrollBounceBehavior(.basedOnSize)
         .scrollDismissesKeyboard(.interactively)
+        .background(Surface.page)
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { availableWidth = $0 }
         .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $isEditingGoal) { GoalEditorView() }
@@ -38,8 +39,18 @@ struct SummaryScreen: View {
     /// Range picker, chart and legend — or a placeholder while the history loads.
     @ViewBuilder private func chartSection(height: @escaping (CGFloat) -> CGFloat) -> some View {
         if hasChart {
-            rangePicker
-            chart.containerRelativeFrame(.vertical) { h, _ in height(h) }
+            // One card: range pills across the top, then the chart.
+            VStack(spacing: 0) {
+                rangePicker
+                    .padding(.horizontal, 8)
+                    .padding(.top, 6)
+                chart.containerRelativeFrame(.vertical) { h, _ in height(h) }
+                    .padding(.top, 12)
+                    .padding(.bottom, 12)
+                    .padding(.leading, 14)
+                    .padding(.trailing, 10)
+            }
+            .panelBackground()
             LayerChips()
         } else if store.status == .loading || !store.entries.isEmpty {
             ProgressView()
@@ -140,12 +151,7 @@ struct SummaryScreen: View {
     private var rangePicker: some View {
         HStack {
             // Picking a range always shows its most recent stretch (Y = the last 365 days, M = the last month…).
-            Picker("Range", selection: Binding(get: { settings.chartRange }, set: { select($0, anchorToEnd: true) })) {
-                ForEach(ChartRange.allCases) { range in
-                    Text(range.rawValue).tag(range)
-                }
-            }
-            .pickerStyle(.segmented)
+            RangePicker(selection: Binding(get: { settings.chartRange }, set: { select($0, anchorToEnd: true) }))
             if isCustomZoom || isScrolledBack {
                 Button("Reset", systemImage: "arrow.uturn.backward") { select(settings.chartRange, anchorToEnd: true) }
                     .labelStyle(.iconOnly)
@@ -288,5 +294,56 @@ enum Projection {
         let window = Analytics.slice(trend, in: last.date.addingTimeInterval(-Double(windowDays) * 86_400)...last.date)
         guard hasEnoughHistory(window) else { return nil }
         return Analytics.linearRegression(window).map { $0.slope * 7 }
+    }
+}
+
+/// Chart range selector: a row of labels with a sliding pill, drawn as the chart card's header.
+/// Custom rather than a segmented Picker so it can sit flat in the card and every point is tappable.
+struct RangePicker: View {
+    @Binding var selection: ChartRange
+    @Namespace private var pill
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(ChartRange.allCases) { range in
+                let isSelected = range == selection
+                Button {
+                    withAnimation(.snappy(duration: 0.25)) { selection = range }
+                } label: {
+                    Text(range.shortTitle)
+                        .font(.footnote.weight(isSelected ? .bold : .regular))
+                        .foregroundStyle(.primary)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background {
+                            if isSelected {
+                                Capsule()
+                                    .fill(Color(.systemGray4))
+                                    .shadow(color: .black.opacity(0.12), radius: 4, y: 1)
+                                    .matchedGeometryEffect(id: "pill", in: pill)
+                            }
+                        }
+                        .contentShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier(range.rawValue)
+                .accessibilityAddTraits(isSelected ? .isSelected : [])
+            }
+        }
+        .frame(height: 34)
+        .sensoryFeedback(.selection, trigger: selection)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Range")
+    }
+}
+
+private extension ChartRange {
+    /// "1W", "1M", "3M", "6M", "1Y", "2Y", "All".
+    var shortTitle: String {
+        switch self {
+        case .week: "1W"
+        case .month: "1M"
+        case .year: "1Y"
+        default: rawValue
+        }
     }
 }

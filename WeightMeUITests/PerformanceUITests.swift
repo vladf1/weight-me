@@ -30,7 +30,7 @@ final class PerformanceUITests: XCTestCase {
     @MainActor private func run(years: String) {
         let app = XCUIApplication()
         app.launchArguments = ["-demo", "-demoYears", years, "-chartRange", "All",
-                               "-chartLayers", "(readings,average7,average30,average90,trend,monthlyRange)"]
+                               "-chartLayers.v2", "(readings,average7,average30,average90,trend,monthlyRange)"]
         timed("launch to chart", limit: 12) {
             app.launch()
             XCTAssertTrue(app.descendants(matching: .any)["weightChart"].firstMatch.waitForExistence(timeout: 12))
