@@ -72,6 +72,7 @@ final class LatestWeightCardUITests: XCTestCase {
         field.tap()
         sleep(1)
         snapshot(app, "43-focused-empty")
+        XCTAssertTrue(save.isEnabled, "Tapping the number alone allows saving the same weight again")
         field.typeText("180.4")
         XCTAssertEqual(value(field), 180.4, accuracy: 0.001)
         XCTAssertTrue(save.isEnabled)

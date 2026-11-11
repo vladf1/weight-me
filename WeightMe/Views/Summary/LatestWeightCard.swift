@@ -24,8 +24,12 @@ struct LatestWeightCard: View {
 
     private var isEditing: Bool { isEdited || fieldFocused }
 
+    /// The weight in the field. Tapping the number empties it so you can type straight over, but until
+    /// you type, the latest (shown as the placeholder) counts — so Save logs the same weight again.
     private var parsedValue: Double? {
-        Double(text.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: ",", with: "."))
+        let trimmed = text.trimmingCharacters(in: .whitespaces)
+        if trimmed.isEmpty, fieldFocused { return latestValue }
+        return Double(trimmed.replacingOccurrences(of: ",", with: "."))
     }
 
     private var parsedKg: Double? { parsedValue.map { unit.kilograms(from: $0) } }
@@ -268,6 +272,9 @@ struct LatestWeightCard: View {
 
     private func attemptSave() {
         guard let kg = parsedKg, isValid else { return }
+        // Saving the placeholder: fill it in, so losing focus (the alert, or save itself) doesn't
+        // read an empty field as Cancel.
+        if text.trimmingCharacters(in: .whitespaces).isEmpty, let parsedValue { text = Self.format(parsedValue) }
         if EntryCheck.isLargeChange(kg: kg, date: .now, previous: previousEntry) {
             confirmingLargeChange = true
         } else {
