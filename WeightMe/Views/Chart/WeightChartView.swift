@@ -144,7 +144,7 @@ struct WeightChartView: View {
         .chartYScale(domain: yScale.domain)
         .chartYAxis {
             AxisMarks(position: .trailing, values: yScale.ticks) { value in
-                AxisGridLine()
+                AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
                 AxisValueLabel {
                     if let kg = value.as(Double.self) {
                         Text(unit.format(kg, decimals: yScale.decimals, includeUnit: false))
@@ -153,9 +153,9 @@ struct WeightChartView: View {
             }
         }
         .chartXAxis {
+            // Labels and a short tick only: vertical grid lines made the chart busy.
             AxisMarks(values: xAxisTickDates) { value in
-                AxisGridLine()
-                AxisTick()
+                AxisTick(length: 4, stroke: StrokeStyle(lineWidth: 0.5))
                 AxisValueLabel(centered: false) {
                     if let date = value.as(Date.self) { Text(xAxisLabel(for: date)) }
                 }
@@ -315,8 +315,8 @@ struct WeightChartView: View {
     }
 }
 
-/// Value tags on the first and last entry on screen: the first sits at the left edge pointing at
-/// its level, the last sits above its point.
+/// Value tags on the first and last entry on screen: the first sits just right of its point,
+/// the last sits above its point.
 private struct EndpointLabels: View {
     let proxy: ChartProxy
     let visible: ArraySlice<SeriesPoint>
@@ -329,14 +329,20 @@ private struct EndpointLabels: View {
         let plot = proxy.plotSize
         if let first = visible.first, let last = visible.last,
            let x0 = proxy.position(forX: leftEdge),
+           let firstX = proxy.position(forX: first.date).map({ $0 - x0 }),
            let firstY = proxy.position(forY: first.kg),
            let lastX = proxy.position(forX: last.date).map({ $0 - x0 }),
            let lastY = proxy.position(forY: last.kg) {
             // Each tag sits in a zero-height, plot-wide strip placed at its point's height.
             ZStack {
                 if visible.count > 1 {
+                    // Arrow tip on the first entry in view (not the plot edge, which the line
+                    // may cross at a different height on its way in from an earlier entry).
                     tag(first.kg, pointer: .left)
                         .fixedSize()
+                        .alignmentGuide(.leading) { d in
+                            -min(max(firstX + 2, 0), plot.width - d.width)
+                        }
                         .frame(width: plot.width, height: 0, alignment: .leading)
                         .position(x: plot.width / 2, y: firstY)
                 }

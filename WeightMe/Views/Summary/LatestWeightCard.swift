@@ -327,37 +327,54 @@ struct WeightRuler: View {
 
     /// Points per step.
     private let spacing: CGFloat = 9
+
+    /// Calls `body` with each tick's index (value / step) and x position across `size`.
+    private func forEachTick(in size: CGSize, shown: Double, _ body: (Int, CGFloat) -> Void) {
+        let mid = size.width / 2
+        let position = shown / step
+        let centerIndex = position.rounded()
+        let fraction = position - centerIndex
+        let count = Int(mid / spacing) + 2
+        for i in -count...count {
+            body(Int(centerIndex) + i, mid + (CGFloat(i) - fraction) * spacing)
+        }
+    }
     @State private var dragStartValue: Double?
     @State private var liveValue: Double?
 
     var body: some View {
         let shown = liveValue ?? value
-        Canvas { context, size in
-            let mid = size.width / 2
-            let position = shown / step
-            let centerIndex = position.rounded()
-            let fraction = position - centerIndex
-            let count = Int(mid / spacing) + 2
-            for i in -count...count {
-                let index = Int(centerIndex) + i
-                let x = mid + (CGFloat(i) - fraction) * spacing
-                let isWhole = index % 10 == 0
-                let isHalf = index % 5 == 0
-                let height: CGFloat = isWhole ? 26 : isHalf ? 18 : 11
-                var tick = Path()
-                tick.move(to: CGPoint(x: x, y: 0))
-                tick.addLine(to: CGPoint(x: x, y: height))
-                context.stroke(tick, with: .color(.secondary.opacity(isWhole ? 0.9 : 0.5)), lineWidth: isWhole ? 1.5 : 1)
-                if isWhole {
-                    context.draw(Text("\(index / 10)").font(.caption2.monospacedDigit()).foregroundStyle(.secondary),
-                                 at: CGPoint(x: x, y: size.height - 7))
+        ZStack {
+            Canvas { context, size in
+                forEachTick(in: size, shown: shown) { index, x in
+                    let isWhole = index % 10 == 0
+                    let isHalf = index % 5 == 0
+                    let height: CGFloat = isWhole ? 26 : isHalf ? 18 : 11
+                    var tick = Path()
+                    tick.move(to: CGPoint(x: x, y: 0))
+                    tick.addLine(to: CGPoint(x: x, y: height))
+                    context.stroke(tick, with: .color(.secondary.opacity(isWhole ? 0.9 : 0.5)), lineWidth: isWhole ? 1.5 : 1)
                 }
             }
-        }
-        .mask {
-            LinearGradient(stops: [.init(color: .clear, location: 0), .init(color: .black, location: 0.18),
-                                   .init(color: .black, location: 0.82), .init(color: .clear, location: 1)],
-                           startPoint: .leading, endPoint: .trailing)
+            .mask {
+                LinearGradient(stops: [.init(color: .clear, location: 0), .init(color: .black, location: 0.18),
+                                       .init(color: .black, location: 0.82), .init(color: .clear, location: 1)],
+                               startPoint: .leading, endPoint: .trailing)
+            }
+            // Numbers fade as a whole by where their center is. Under the ticks' gradient mask a
+            // number half into the fade lost its first digits, leaving a stray "0" at the edge.
+            Canvas { context, size in
+                forEachTick(in: size, shown: shown) { index, x in
+                    guard index % 10 == 0 else { return }
+                    let edge = min(x, size.width - x) / size.width
+                    let alpha = min(max((edge - 0.08) / 0.12, 0), 1)
+                    guard alpha > 0 else { return }
+                    var label = context
+                    label.opacity = alpha
+                    label.draw(Text("\(index / 10)").font(.caption2.monospacedDigit()).foregroundStyle(.secondary),
+                               at: CGPoint(x: x, y: size.height - 7))
+                }
+            }
         }
         .overlay(alignment: .top) {
             Capsule().fill(Color.accentColor).frame(width: 3, height: 30)

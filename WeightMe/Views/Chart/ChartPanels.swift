@@ -23,13 +23,14 @@ struct ChangeBadge: View {
     }
 }
 
-/// Toggle chips that double as the chart legend.
+/// Toggle chips that double as the chart legend. Styled like the range pills: small text,
+/// a gray pill behind the ones that are on.
 struct LayerChips: View {
     @Environment(AppSettings.self) private var settings
 
     var body: some View {
         ScrollView(.horizontal) {
-            HStack(spacing: 8) {
+            HStack(spacing: 2) {
                 ForEach(ChartLayer.allCases) { layer in
                     let isOn = settings.isVisible(layer)
                     Button {
@@ -37,21 +38,20 @@ struct LayerChips: View {
                     } label: {
                         HStack(spacing: 6) {
                             swatch(for: layer)
+                                .opacity(isOn ? 1 : 0.45)
                             Text(layer.title)
-                                .font(.subheadline.weight(.medium))
+                                .font(.footnote.weight(isOn ? .semibold : .regular))
                         }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 7)
-                        .background(isOn ? ChartPalette.color(for: layer).opacity(0.16) : Color.secondary.opacity(0.08),
-                                    in: Capsule())
-                        .overlay(Capsule().strokeBorder(isOn ? ChartPalette.color(for: layer).opacity(0.5) : .clear))
+                        .padding(.horizontal, 10)
+                        .frame(height: 30)
+                        .background(isOn ? Color(.systemGray5) : .clear, in: Capsule())
                         .foregroundStyle(isOn ? Color.primary : Color.secondary)
+                        .contentShape(Capsule())
                     }
                     .buttonStyle(.plain)
                     .accessibilityAddTraits(isOn ? .isSelected : [])
                 }
             }
-            .padding(.vertical, 2)
         }
         .scrollIndicators(.hidden)
     }
@@ -60,13 +60,12 @@ struct LayerChips: View {
     private func swatch(for layer: ChartLayer) -> some View {
         let color = ChartPalette.color(for: layer)
         switch layer {
-        case .readings:
-            Circle().fill(color).frame(width: 8, height: 8)
         case .goal, .projection:
             Capsule().stroke(color, style: StrokeStyle(lineWidth: 2, dash: [3, 2])).frame(width: 14, height: 2)
         case .monthlyRange:
             RoundedRectangle(cornerRadius: 2).fill(color.opacity(0.4)).frame(width: 8, height: 12)
         default:
+            // Entries are a line now too.
             Capsule().fill(color).frame(width: 14, height: 3)
         }
     }
