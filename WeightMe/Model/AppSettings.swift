@@ -127,6 +127,21 @@ nonisolated enum ChartRange: String, CaseIterable, Identifiable, Sendable {
     }
 }
 
+/// From this many days on screen (6M and longer, or pinched out that far) the readings line gives way
+/// to the 7-day average, like the Health app: hundreds of daily points just smear together there.
+nonisolated let longRangeDays: Double = 150
+
+nonisolated extension Set where Element == ChartLayer {
+    /// What is actually drawn: on long ranges "Readings" is shown as the 7-day average.
+    func shown(longRange: Bool) -> Set<ChartLayer> {
+        guard longRange, contains(.readings) else { return self }
+        var result = self
+        result.remove(.readings)
+        result.insert(.average7)
+        return result
+    }
+}
+
 /// Things that can be drawn on the chart.
 nonisolated enum ChartLayer: String, CaseIterable, Identifiable, Sendable {
     case readings

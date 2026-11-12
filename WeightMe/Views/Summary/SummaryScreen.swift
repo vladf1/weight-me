@@ -45,11 +45,11 @@ struct SummaryScreen: View {
                     .padding(.horizontal, 8)
                     .padding(.top, 6)
                 chart.containerRelativeFrame(.vertical) { h, _ in height(h) }
-                    .padding(.top, 12)
+                    .padding(.top, 16)
                     .padding(.bottom, 8)
                     .padding(.leading, 14)
                     .padding(.trailing, 10)
-                LayerChips()
+                LayerChips(longRange: isLongRange)
                     .contentMargins(.horizontal, 8, for: .scrollContent)
                     .padding(.bottom, 8)
             }
@@ -174,6 +174,12 @@ struct SummaryScreen: View {
     }
 
     // MARK: Viewport
+
+    /// Same rule the chart uses to swap readings for the 7-day average.
+    private var isLongRange: Bool {
+        let length = viewport.length ?? domain.upperBound.timeIntervalSince(domain.lowerBound)
+        return length / 86_400 >= longRangeDays
+    }
 
     var domain: ClosedRange<Date> {
         guard let range = series.dateRange else {
@@ -301,40 +307,16 @@ enum Projection {
 
 /// Chart range selector: a row of labels with a sliding pill, drawn as the chart card's header.
 /// Custom rather than a segmented Picker so it can sit flat in the card and every point is tappable.
+/// The system segmented control, for iOS 26's Liquid Glass drag effect (the thumb lifts into a lens).
 struct RangePicker: View {
     @Binding var selection: ChartRange
-    @Namespace private var pill
 
     var body: some View {
-        HStack(spacing: 0) {
-            ForEach(ChartRange.allCases) { range in
-                let isSelected = range == selection
-                Button {
-                    withAnimation(.snappy(duration: 0.25)) { selection = range }
-                } label: {
-                    Text(range.shortTitle)
-                        .font(.footnote.weight(isSelected ? .bold : .regular))
-                        .foregroundStyle(.primary)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background {
-                            if isSelected {
-                                Capsule()
-                                    .fill(Color(.systemGray4))
-                                    .shadow(color: .black.opacity(0.12), radius: 4, y: 1)
-                                    .matchedGeometryEffect(id: "pill", in: pill)
-                            }
-                        }
-                        .contentShape(Capsule())
-                }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier(range.rawValue)
-                .accessibilityAddTraits(isSelected ? .isSelected : [])
-            }
+        Picker("Range", selection: $selection) {
+            ForEach(ChartRange.allCases) { Text($0.shortTitle).tag($0) }
         }
-        .frame(height: 34)
+        .pickerStyle(.segmented)
         .sensoryFeedback(.selection, trigger: selection)
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel("Range")
     }
 }
 

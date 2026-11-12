@@ -26,15 +26,36 @@ struct ChangeBadge: View {
 /// Toggle chips that double as the chart legend. Styled like the range pills: small text,
 /// a gray pill behind the ones that are on.
 struct LayerChips: View {
+    /// On long ranges "Readings" is drawn as the 7-day average, so the two share one "7-day avg" chip.
+    var longRange = false
     @Environment(AppSettings.self) private var settings
+
+    private var chips: [ChartLayer] {
+        longRange ? ChartLayer.allCases.filter { $0 != .readings } : ChartLayer.allCases
+    }
+
+    private func isOn(_ layer: ChartLayer) -> Bool {
+        settings.visibleLayers.shown(longRange: longRange).contains(layer)
+    }
+
+    private func toggle(_ layer: ChartLayer) {
+        guard longRange, layer == .average7 else { return settings.toggle(layer) }
+        // The merged chip: turning it off hides both; turning it on brings back Readings,
+        // which long ranges draw as the 7-day average.
+        if isOn(.average7) {
+            settings.visibleLayers.subtract([.readings, .average7])
+        } else {
+            settings.visibleLayers.insert(.readings)
+        }
+    }
 
     var body: some View {
         ScrollView(.horizontal) {
             HStack(spacing: 2) {
-                ForEach(ChartLayer.allCases) { layer in
-                    let isOn = settings.isVisible(layer)
+                ForEach(chips) { layer in
+                    let isOn = isOn(layer)
                     Button {
-                        withAnimation(.snappy) { settings.toggle(layer) }
+                        withAnimation(.snappy) { toggle(layer) }
                     } label: {
                         HStack(spacing: 6) {
                             swatch(for: layer)

@@ -70,12 +70,13 @@ struct WeightChartView: View {
     }
 
     var body: some View {
-        let visibleReadings = Analytics.slice(series.readings, in: visibleRange)
+        let primary = isLongRange ? series.average7 : series.readings
+        let visiblePrimary = Analytics.slice(primary, in: visibleRange)
         let yScale = computeYScale()
-        let selection = selectedDate.flatMap { Analytics.nearest(series.readings, to: $0) }
+        let selection = selectedDate.flatMap { Analytics.nearest(primary, to: $0) }
         let readings = windowed(series.readings, maxCount: 1500)
         let lineLayers: [(ChartLayer, [SeriesPoint])] = [ChartLayer.average90, .average30, .average7, .trend]
-            .filter { layers.contains($0) }
+            .filter { shown.contains($0) }
             .map { ($0, windowed(series.points(for: $0), maxCount: 500)) }
 
         Chart {
@@ -90,13 +91,13 @@ struct WeightChartView: View {
                 }
             }
 
-            if layers.contains(.goal), let goalKg {
+            if shown.contains(.goal), let goalKg {
                 RuleMark(y: .value("Goal", goalKg))
                     .foregroundStyle(ChartPalette.goal.opacity(0.8))
                     .lineStyle(StrokeStyle(lineWidth: 1.5, dash: [6, 4]))
             }
 
-            if layers.contains(.readings) {
+            if shown.contains(.readings) {
                 // A plain line through every entry. It steps back when a smoothed line is on top of it.
                 let isMain = lineLayers.isEmpty
                 ForEach(readings) { p in
@@ -108,16 +109,21 @@ struct WeightChartView: View {
 
             ForEach(lineLayers, id: \.0) { layer, points in
                 let isTrend = layer == .trend
+                // Standing in for Readings on a long range, the 7-day line connects across gaps like the
+                // readings line does. Otherwise sparse stretches (a reading every week or two) would be
+                // one-point segments, which draw nothing.
+                let connectsGaps = layer == .average7 && isLongRange && layers.contains(.readings)
                 ForEach(points) { p in
                     LineMark(x: .value("Date", p.date), y: .value("Weight", p.kg),
-                             series: .value("Series", "\(layer.rawValue)-\(p.segment)"))
+                             series: .value("Series", connectsGaps ? layer.rawValue : "\(layer.rawValue)-\(p.segment)"))
                         .foregroundStyle(ChartPalette.color(for: layer))
                         .lineStyle(StrokeStyle(lineWidth: isTrend ? 3 : 2, lineCap: .round, lineJoin: .round))
-                        .interpolationMethod(.monotone)
+                        // Straight segments when connecting gaps: a curve overshoots between far-apart points.
+                        .interpolationMethod(connectsGaps ? .linear : .monotone)
                 }
             }
 
-            if layers.contains(.projection), let projection {
+            if shown.contains(.projection), let projection {
                 ForEach([projection.start, projection.end]) { point in
                     LineMark(x: .value("Date", point.date), y: .value("Weight", point.kg),
                              series: .value("Series", "projection"))
@@ -140,6 +146,8 @@ struct WeightChartView: View {
             }
         }
         .chartLegend(.hidden)
+        // A line heading to a point just off-screen can leave the y range; keep it inside the plot.
+        .chartPlotStyle { $0.clipped() }
         .chartXScale(domain: domain)
         .chartYScale(domain: yScale.domain)
         .chartYAxis {
@@ -174,10 +182,10 @@ struct WeightChartView: View {
             // Overlays rather than mark annotations: scrollable charts clip annotations and a
             // rule's leading annotation scrolls off-screen with the start of the data.
             ZStack(alignment: .topLeading) {
-                if layers.contains(.readings), selection == nil {
-                    EndpointLabels(proxy: proxy, visible: visibleReadings, leftEdge: visibleRange.lowerBound, unit: unit)
+                if shown.contains(isLongRange ? .average7 : .readings), selection == nil {
+                    EndpointLabels(proxy: proxy, visible: visiblePrimary, leftEdge: visibleRange.lowerBound, unit: unit)
                 }
-                if layers.contains(.goal), let goalKg, let y = proxy.position(forY: goalKg),
+                if shown.contains(.goal), let goalKg, let y = proxy.position(forY: goalKg),
                    y >= 14, y <= proxy.plotSize.height {
                     Text("Goal \(unit.format(goalKg))")
                         .font(.caption2.weight(.semibold))
@@ -192,7 +200,8 @@ struct WeightChartView: View {
                     HStack {
                         if onRight { Spacer(minLength: 0) }
                         SelectionCallout(date: selection.date, readingKg: selection.kg, series: series,
-                                         layers: layers, unit: unit)
+                                         layers: isLongRange ? shown.subtracting([.average7]) : shown, unit: unit,
+                                         valueLabel: isLongRange ? ChartLayer.average7.title : nil)
                         if !onRight { Spacer(minLength: 0) }
                     }
                     .frame(width: proxy.plotSize.width)
@@ -229,8 +238,12 @@ struct WeightChartView: View {
 
     private var visibleDays: Double { visibleLength / 86_400 }
 
+    /// Long ranges plot the 7-day average instead of every reading (see `longRangeDays`).
+    private var isLongRange: Bool { visibleDays >= longRangeDays }
+    private var shown: Set<ChartLayer> { layers.shown(longRange: isLongRange) }
+
     /// Month-wide bars only make sense when several months are on screen.
-    private var showsMonthlyRange: Bool { layers.contains(.monthlyRange) && visibleDays >= 90 }
+    private var showsMonthlyRange: Bool { shown.contains(.monthlyRange) && visibleDays >= 90 }
 
     /// Calendar-aligned ticks (days, weeks, months, quarters, half-years or years depending on zoom),
     /// generated only for the data window around the screen. Striding over the whole history makes
@@ -291,7 +304,7 @@ struct WeightChartView: View {
             for p in points { lo = min(lo, p.kg); hi = max(hi, p.kg) }
         }
         let layerList: [ChartLayer] = [.readings, .average7, .average30, .average90, .trend]
-        for layer in layerList where layers.contains(layer) {
+        for layer in layerList where shown.contains(layer) {
             include(Analytics.slice(series.points(for: layer), in: range))
         }
         if showsMonthlyRange {
@@ -302,10 +315,10 @@ struct WeightChartView: View {
             include(series.readings[...])
         }
         if !lo.isFinite { lo = 70; hi = 80 }
-        if layers.contains(.projection), let projection, range.contains(projection.end.date) {
+        if shown.contains(.projection), let projection, range.contains(projection.end.date) {
             lo = min(lo, projection.end.kg); hi = max(hi, projection.end.kg)
         }
-        if layers.contains(.goal), let goalKg {
+        if shown.contains(.goal), let goalKg {
             let span = max(hi - lo, 1)
             if goalKg >= lo - span * 0.6 && goalKg <= hi + span * 0.6 {
                 lo = min(lo, goalKg); hi = max(hi, goalKg)
@@ -411,12 +424,19 @@ struct SelectionCallout: View {
     let series: DerivedSeries
     let layers: Set<ChartLayer>
     let unit: WeightUnit
+    /// Names the main value when it isn't a single reading (e.g. "7-day avg" on long ranges).
+    var valueLabel: String? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
             Text(date.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day().year()))
                 .font(.caption2)
                 .foregroundStyle(.secondary)
+            if let valueLabel {
+                Text(valueLabel)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
             Text(unit.format(readingKg))
                 .font(.headline.monospacedDigit())
             ForEach([ChartLayer.average7, .average30, .average90, .trend], id: \.self) { layer in
