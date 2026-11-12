@@ -2,7 +2,7 @@ import XCTest
 
 /// End-to-end tests against the simulator's real HealthKit store.
 /// Run on a dedicated simulator: they write to (and clean up) Apple Health data owned by WeightMe.
-/// Tests are named so XCTest runs them in order (connect → seed → import → entry editing).
+/// Tests are named so XCTest runs them in order (connect → chart → import → entry editing).
 final class HealthFlowUITests: XCTestCase {
     override func setUpWithError() throws {
         continueAfterFailure = false
@@ -79,22 +79,17 @@ final class HealthFlowUITests: XCTestCase {
         XCTAssertTrue(ready, "Expected chart or empty state after connecting Health")
     }
 
-    @MainActor func test2_SeedSampleData() {
+    @MainActor func test2_ChartWithHealthData() throws {
         let app = launch(["-tab", "settings"])
         connectIfNeeded(app)
-        let readings = app.staticTexts["Readings"]
-        _ = readings.waitForExistence(timeout: 5)
-        let seed = app.buttons["Seed Apple Health with Sample Data"]
-        var swipes = 0
-        while !seed.isHittable && swipes < 8 { app.swipeUp(); swipes += 1 }
-        // Only seed once; the app also refuses to seed a store that already has data.
+        _ = app.staticTexts["Readings"].waitForExistence(timeout: 5)
+        // Sample data is written from outside the app by Scripts/seed-health.sh.
         let countLabel = app.staticTexts["readingsCount"]
         let existing = Int((countLabel.exists ? countLabel.label : "0").filter(\.isNumber)) ?? 0
-        if existing < 100 {
-            seed.tap()
-            XCTAssertTrue(app.staticTexts["Seeded."].waitForExistence(timeout: 60))
+        guard existing >= 100 else {
+            throw XCTSkip("Health has only \(existing) weights. Run Scripts/seed-health.sh, then rerun.")
         }
-        snapshot(app, "02-settings-after-seed")
+        snapshot(app, "02-settings-with-health-data")
 
         let relaunched = launch(["-chartRange", "Y"])
         XCTAssertTrue(relaunched.staticTexts.matching(NSPredicate(format: "label BEGINSWITH '7-day average'")).firstMatch.waitForExistence(timeout: 15))

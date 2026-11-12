@@ -29,12 +29,7 @@ struct WeightMeApp: App {
                 .environment(settings)
                 .environment(store)
                 .environment(router)
-                .task {
-                    await store.start()
-                    #if DEBUG
-                    if ProcessInfo.processInfo.arguments.contains("-reseedHealth") { await store.reseedHealth() }
-                    #endif
-                }
+                .task { await store.start() }
                 .onOpenURL { router.handle($0) }
         }
     }

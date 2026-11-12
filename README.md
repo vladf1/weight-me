@@ -54,12 +54,15 @@ Privacy policy: [PRIVACY.md](PRIVACY.md).
 ### Demo mode
 
 Launch with the `-demo` argument to run on generated multi-year sample data without touching HealthKit
-(useful in the simulator, whose Health store starts empty). In Debug builds, Settings › Developer can also seed the
-simulator's Health store with the same sample data.
+(useful in the simulator, whose Health store starts empty).
+
+To put the same sample data into a simulator's real Health store, approve Health access in the app once, then run
+`Scripts/seed-health.sh` (`seed`, `wipe` or `reseed`; simulators only). It runs a test inside the app, so the app
+itself has no seeding code.
 
 Other Debug-only launch arguments, handy for screenshots: `-tab entries|settings`, `-openAdd`, `-openExport`,
 `-openImport <file in Documents>`, `-widgetGallery` (renders every widget size in-app), `-selectDaysAgo N`
-(preselects a chart point), `-reseedHealth` (wipes and reseeds WeightMe's data in the simulator's Health store).
+(preselects a chart point).
 Any setting can also be overridden from the command line, e.g. `-chartRange Y -goalKg 80 -chartLayers '(readings,trend,goal)'`.
 
 ### Tests
@@ -68,7 +71,7 @@ Any setting can also be overridden from the command line, e.g. `-chartRange Y -g
 # Unit tests: CSV parsing, Lose It import planning, analytics
 xcodebuild -project WeightMe.xcodeproj -scheme WeightMe -destination 'platform=iOS Simulator,name=iPhone 18 Pro' test
 
-# UI tests: real HealthKit end to end (permission sheet, seeding, import with every confirmation gate,
+# UI tests: real HealthKit end to end (permission sheet, chart with seeded data, import with every confirmation gate,
 # undo, log/delete) plus chart gestures and a 15-year performance check. Use a dedicated simulator — they write Health data.
 xcodebuild -project WeightMe.xcodeproj -scheme WeightMeUITests -destination 'platform=iOS Simulator,name=iPhone 18 Pro' test
 ```

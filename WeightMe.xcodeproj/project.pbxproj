@@ -45,6 +45,7 @@
 		B2AD2372F2596012E1AA8B56 /* BackupExclusionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DFE22A83B942BC8DD0E4681 /* BackupExclusionTests.swift */; };
 		B33347718FE005C6382D08BE /* EntryEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 345FF8D0E987ED93FE4D3E55 /* EntryEditorView.swift */; };
 		BC2BF00C45A2D1E132C0BCCE /* WeightMeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C002A600C4C5008AED4B382 /* WeightMeApp.swift */; };
+		C2786761DE574CD7B17F353D /* HealthSeeding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00E8239929A6F0711F5E550A /* HealthSeeding.swift */; };
 		C40A6CA6A58FE25DA903235D /* WatchModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F0958C912682378801283FB /* WatchModel.swift */; };
 		C590E5EB5986347611B09A17 /* WeightMeWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 979805AA0506583DD72D860F /* WeightMeWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		CA4EAB547E3BA72FD9A1A4BE /* CSV.swift in Sources */ = {isa = PBXBuildFile; fileRef = F84485A28C773FE789904DEE /* CSV.swift */; };
@@ -127,6 +128,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		00E8239929A6F0711F5E550A /* HealthSeeding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthSeeding.swift; sourceTree = "<group>"; };
 		0300058FE96656B1D6BCC049 /* LatestWeightCardUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LatestWeightCardUITests.swift; sourceTree = "<group>"; };
 		054E14622167A851FDC417B6 /* CSVImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVImportTests.swift; sourceTree = "<group>"; };
 		08BC2438BC06940B9D033069 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -317,6 +319,7 @@
 				F8B13B1C3A1C9E89890C3CCD /* AnalyticsTests.swift */,
 				5DFE22A83B942BC8DD0E4681 /* BackupExclusionTests.swift */,
 				054E14622167A851FDC417B6 /* CSVImportTests.swift */,
+				00E8239929A6F0711F5E550A /* HealthSeeding.swift */,
 				5A1E99AE479DEE4445E30DAC /* IntentTests.swift */,
 			);
 			path = WeightMeTests;
@@ -656,6 +659,7 @@
 				686076B3B53B7A99DB3479DE /* AnalyticsTests.swift in Sources */,
 				B2AD2372F2596012E1AA8B56 /* BackupExclusionTests.swift in Sources */,
 				2D97A69B6C322800DD419AFD /* CSVImportTests.swift in Sources */,
+				C2786761DE574CD7B17F353D /* HealthSeeding.swift in Sources */,
 				3AFB0B6C01838108AE314527 /* IntentTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

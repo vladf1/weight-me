@@ -151,12 +151,6 @@ nonisolated final class HealthService: @unchecked Sendable {
         return try await store.deleteObjects(of: Self.bodyMass, predicate: predicate)
     }
 
-    /// Deletes every sample this app has ever written (debug tooling).
-    func deleteAllOwnSamples() async throws -> Int {
-        let predicate = HKQuery.predicateForObjects(from: HKSource.default())
-        return try await store.deleteObjects(of: Self.bodyMass, predicate: predicate)
-    }
-
     // MARK: Background delivery
 
     /// Wakes the app when weight data changes in Health so the widget stays current.

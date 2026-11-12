@@ -7,8 +7,6 @@ struct SettingsScreen: View {
 
     @State private var isEditingGoal = false
     @State private var confirmingRebuild = false
-    @State private var debugMessage: String?
-    @State private var confirmingDeleteOwn = false
 
     var body: some View {
         @Bindable var settings = settings
@@ -67,7 +65,7 @@ struct SettingsScreen: View {
             } header: {
                 Text("Data")
             } footer: {
-                Text("Import adds weights from a Lose It! or WeightMe CSV to Apple Health without touching existing data.")
+                Text("Import adds weights from a CSV file to Apple Health. Weights already there aren't changed.")
             }
 
             Section {
@@ -89,7 +87,7 @@ struct SettingsScreen: View {
             } header: {
                 Text("Apple Health")
             } footer: {
-                Text("Apple Health is the source of truth. WeightMe keeps a local copy for speed and syncs only changes. To change permissions: Settings › Health › Data Access & Devices › WeightMe.")
+                Text("Your weights live in Apple Health. WeightMe keeps a copy on this device so it opens quickly, and picks up new entries from Health as they arrive. To change what WeightMe can access, go to Settings › Health › Data Access & Devices › WeightMe.")
             }
 
             Section("About") {
@@ -97,22 +95,6 @@ struct SettingsScreen: View {
                 Link("Source on GitHub", destination: URL(string: "https://github.com/vladf1/weight-me")!)
             }
 
-            #if DEBUG
-            Section("Developer") {
-                if store.mode == .demo {
-                    Text("Running with demo data (-demo).").foregroundStyle(.secondary)
-                } else {
-                    Button("Seed Apple Health with Sample Data") {
-                        Task {
-                            do { try await store.seedSampleData(); debugMessage = "Seeded." }
-                            catch { debugMessage = error.localizedDescription }
-                        }
-                    }
-                    Button("Delete All Data Written by WeightMe", role: .destructive) { confirmingDeleteOwn = true }
-                }
-                if let debugMessage { Text(debugMessage).font(.caption).foregroundStyle(.secondary) }
-            }
-            #endif
         }
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)   // small centered title, like History
@@ -127,16 +109,6 @@ struct SettingsScreen: View {
         } message: {
             Text("This only clears WeightMe's local copy. Nothing in Apple Health is changed.")
         }
-        #if DEBUG
-        .confirmationDialog("Delete every entry WeightMe wrote to Apple Health?", isPresented: $confirmingDeleteOwn, titleVisibility: .visible) {
-            Button("Delete", role: .destructive) {
-                Task {
-                    do { try await store.deleteAllOwnData(); debugMessage = "Deleted." }
-                    catch { debugMessage = error.localizedDescription }
-                }
-            }
-        }
-        #endif
     }
 }
 
