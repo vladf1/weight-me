@@ -115,6 +115,7 @@ struct SettingsScreen: View {
             #endif
         }
         .navigationTitle("Settings")
+        .navigationBarTitleDisplayMode(.inline)   // small centered title, like History
         .sheet(isPresented: $isEditingGoal) { GoalEditorView() }
         .sheet(isPresented: $router.isImporting, onDismiss: { router.pendingImportURL = nil }) {
             ImportFlowView(initialURL: router.pendingImportURL)

@@ -62,10 +62,11 @@ struct HistoryScreen: View {
             }
         }
         .navigationTitle("History")
+        .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $searchText, prompt: "Date, weight or source")
         .toolbar {
-            ToolbarItem(placement: .primaryAction) { AddEntryButton() }
-            ToolbarItem(placement: .secondaryAction) {
+            // Filter on the left, title centered, Export and Add on the right — no "…" menu.
+            ToolbarItem(placement: .topBarLeading) {
                 Menu {
                     Picker("Source", selection: $sourceFilter) {
                         Text("All Sources").tag(String?.none)
@@ -73,12 +74,14 @@ struct HistoryScreen: View {
                     }
                 } label: {
                     Label("Filter", systemImage: sourceFilter == nil
-                          ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+                          ? "line.3.horizontal.decrease" : "line.3.horizontal.decrease.circle.fill")
                 }
             }
-            ToolbarItem(placement: .secondaryAction) {
+            ToolbarItem(placement: .topBarTrailing) {
                 Button("Export CSV", systemImage: "square.and.arrow.up") { isExporting = true }
             }
+            ToolbarSpacer(.fixed, placement: .topBarTrailing)
+            ToolbarItem(placement: .topBarTrailing) { AddEntryButton() }
         }
         .sheet(item: $editing) { EntryEditorView(mode: .edit($0)) }
         .sheet(item: $viewing) { EntryDetailView(entry: $0) }
