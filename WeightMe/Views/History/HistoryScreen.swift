@@ -86,14 +86,13 @@ struct HistoryScreen: View {
         .sheet(item: $editing) { EntryEditorView(mode: .edit($0)) }
         .sheet(item: $viewing) { EntryDetailView(entry: $0) }
         .sheet(isPresented: $isExporting) { ExportView() }
-        .confirmationDialog("Delete this entry from Apple Health?",
-                            isPresented: Binding(get: { pendingDelete != nil }, set: { if !$0 { pendingDelete = nil } }),
-                            titleVisibility: .visible, presenting: pendingDelete) { entry in
-            Button("Delete \(unit.format(entry.kg))", role: .destructive) {
-                Task {
-                    do { try await store.delete(entry) } catch { deleteError = error.localizedDescription }
-                }
-            }
+        // An alert, not a confirmation dialog: deletes start from a swipe or context menu that's gone by the
+        // time it shows, so a popover would point at the wrong row.
+        .alert("Delete this entry from Apple Health?",
+               isPresented: Binding(get: { pendingDelete != nil }, set: { if !$0 { pendingDelete = nil } }),
+               presenting: pendingDelete) { entry in
+            Button("Delete \(unit.format(entry.kg))", role: .destructive) { delete(entry) }
+            Button("Cancel", role: .cancel) {}
         } message: { _ in
             Text("This can't be undone.")
         }
@@ -191,6 +190,12 @@ struct HistoryScreen: View {
 
     private func open(_ entry: WeightEntry) {
         if entry.isOwn { editing = entry } else { viewing = entry }
+    }
+
+    private func delete(_ entry: WeightEntry) {
+        Task {
+            do { try await store.delete(entry) } catch { deleteError = error.localizedDescription }
+        }
     }
 }
 

@@ -80,6 +80,12 @@ struct SettingsScreen: View {
                 }
                 if store.mode == .health {
                     Button("Rebuild Local Cache", systemImage: "arrow.clockwise") { confirmingRebuild = true }
+                        // Attached to the button so the popover points at it.
+                        .confirmationDialog("Re-read everything from Apple Health?", isPresented: $confirmingRebuild, titleVisibility: .visible) {
+                            Button("Rebuild Cache") { store.rebuildCache() }
+                        } message: {
+                            Text("This only clears WeightMe's local copy. Nothing in Apple Health is changed.")
+                        }
                 }
                 Link(destination: URL(string: "x-apple-health://")!) {
                     Label("Open the Health App", systemImage: "heart.text.square")
@@ -104,11 +110,6 @@ struct SettingsScreen: View {
                 .presentationSizing(.page)
         }
         .sheet(isPresented: $router.isExporting) { ExportView() }
-        .confirmationDialog("Re-read everything from Apple Health?", isPresented: $confirmingRebuild, titleVisibility: .visible) {
-            Button("Rebuild Cache") { store.rebuildCache() }
-        } message: {
-            Text("This only clears WeightMe's local copy. Nothing in Apple Health is changed.")
-        }
     }
 }
 
@@ -149,27 +150,28 @@ struct ImportHistoryView: View {
                             .font(.subheadline)
                             .buttonStyle(.borderless)
                             .padding(.top, 2)
+                            .confirmationDialog("Remove imported entries?",
+                                                isPresented: Binding(get: { pendingUndo?.id == record.id },
+                                                                     set: { if !$0 { pendingUndo = nil } }),
+                                                titleVisibility: .visible) {
+                                Button("Remove \(record.count) Entries from Apple Health", role: .destructive) {
+                                    Task {
+                                        do {
+                                            let removed = try await store.undoImport(record)
+                                            message = "Removed \(removed) entries."
+                                        } catch {
+                                            message = error.localizedDescription
+                                        }
+                                    }
+                                }
+                            } message: {
+                                Text("Every entry added by importing “\(record.fileName)” will be deleted from Apple Health. Other entries are not affected.")
+                            }
                     }
                 }
                 .padding(.vertical, 4)
             }
         }
         .navigationTitle("Import History")
-        .confirmationDialog("Remove imported entries?",
-                            isPresented: Binding(get: { pendingUndo != nil }, set: { if !$0 { pendingUndo = nil } }),
-                            titleVisibility: .visible, presenting: pendingUndo) { record in
-            Button("Remove \(record.count) Entries from Apple Health", role: .destructive) {
-                Task {
-                    do {
-                        let removed = try await store.undoImport(record)
-                        message = "Removed \(removed) entries."
-                    } catch {
-                        message = error.localizedDescription
-                    }
-                }
-            }
-        } message: { record in
-            Text("Every entry added by importing “\(record.fileName)” will be deleted from Apple Health. Other entries are not affected.")
-        }
     }
 }

@@ -623,15 +623,15 @@ struct ImportFinishedView: View {
                 .controlSize(.large)
             if undoneCount == nil {
                 Button("Undo This Import", role: .destructive) { confirmingUndo = true }
+                    .confirmationDialog("Remove the \(record.count) imported entries from Apple Health?",
+                                        isPresented: $confirmingUndo, titleVisibility: .visible) {
+                        Button("Remove \(record.count) Entries", role: .destructive) {
+                            Task { undoneCount = try? await store.undoImport(record) }
+                        }
+                    }
             }
         }
         .padding(32)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .confirmationDialog("Remove the \(record.count) imported entries from Apple Health?",
-                            isPresented: $confirmingUndo, titleVisibility: .visible) {
-            Button("Remove \(record.count) Entries", role: .destructive) {
-                Task { undoneCount = try? await store.undoImport(record) }
-            }
-        }
     }
 }

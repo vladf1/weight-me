@@ -103,6 +103,11 @@ struct EntryEditorView: View {
                 if editingEntry != nil {
                     Section {
                         Button("Delete Entry", role: .destructive) { confirmingDelete = true }
+                            .confirmationDialog("Delete this entry from Apple Health?", isPresented: $confirmingDelete, titleVisibility: .visible) {
+                                Button("Delete", role: .destructive) { delete() }
+                            } message: {
+                                Text("This can't be undone.")
+                            }
                     }
                 }
 
@@ -133,11 +138,6 @@ struct EntryEditorView: View {
                 if let kg = parsedKg, let previous = previousEntry {
                     Text(EntryCheck.largeChangeMessage(kg: kg, previous: previous, unit: unit))
                 }
-            }
-            .confirmationDialog("Delete this entry from Apple Health?", isPresented: $confirmingDelete, titleVisibility: .visible) {
-                Button("Delete", role: .destructive) { delete() }
-            } message: {
-                Text("This can't be undone.")
             }
             .onAppear(perform: load)
         }
