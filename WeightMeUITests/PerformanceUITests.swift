@@ -36,7 +36,7 @@ final class PerformanceUITests: XCTestCase {
             XCTAssertTrue(app.descendants(matching: .any)["weightChart"].firstMatch.waitForExistence(timeout: 12))
         }
 
-        for range in ["W", "M", "3M", "6M", "Y", "2Y", "All"] {
+        for range in ["M", "3M", "6M", "Y", "2Y", "4Y", "All"] {
             let before = inView(app)
             timed("switch to \(range)", limit: 3) {
                 app.buttons[range].firstMatch.tap()

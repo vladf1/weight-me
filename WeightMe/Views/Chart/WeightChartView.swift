@@ -320,9 +320,10 @@ struct WeightChartView: View {
 
     private var visibleDays: Double { visibleLength / 86_400 }
 
-    /// Readings further apart than this aren't joined by a line: a third of the visible span, so a
-    /// stretch with no data shows as empty instead of as a long diagonal between distant readings.
-    private var gapLimit: TimeInterval { visibleLength / 3 }
+    /// Readings further apart than the visible span aren't joined by a line. Gaps you can see across
+    /// stay connected, but a window with no readings in it (whose neighbors are necessarily more than a
+    /// window apart) shows as empty instead of as a diagonal between distant readings.
+    private var gapLimit: TimeInterval { visibleLength }
 
     struct RunPoint: Identifiable {
         var point: SeriesPoint

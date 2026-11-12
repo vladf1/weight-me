@@ -95,7 +95,6 @@ struct LayerChips: View {
 /// Statistics for whatever is currently visible on the chart.
 struct StatsPanel: View {
     let stats: RangeStats?
-    let visibleRange: ClosedRange<Date>
     let unit: WeightUnit
     var columns: Int = 2
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -103,14 +102,8 @@ struct StatsPanel: View {
     var body: some View {
         let columns = dynamicTypeSize.isAccessibilitySize ? 1 : self.columns
         VStack(alignment: .leading, spacing: 12) {
-            AdaptiveStack {
-                Text("In View").font(.headline)
-                if !dynamicTypeSize.isAccessibilitySize { Spacer() }
-                Text(rangeText)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .monospacedDigit()
-            }
+            // The dates in view are in the chart card's header.
+            Text("In View").font(.headline)
             if let stats {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: columns), spacing: 10) {
                     StatTile(title: "Change", value: unit.formatDelta(stats.change),
@@ -135,10 +128,6 @@ struct StatsPanel: View {
         .panelBackground()
     }
 
-    private var rangeText: String {
-        let style = Date.FormatStyle.dateTime.month(.abbreviated).day().year(.twoDigits)
-        return "\(visibleRange.lowerBound.formatted(style)) – \(visibleRange.upperBound.formatted(style))"
-    }
 }
 
 struct StatTile: View {

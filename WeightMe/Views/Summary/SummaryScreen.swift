@@ -44,8 +44,11 @@ struct SummaryScreen: View {
             VStack(spacing: 10) {
                 rangePicker
                 VStack(spacing: 0) {
+                    chartHeader
+                        .padding(.horizontal, 16)
+                        .padding(.top, 14)
                     chart.containerRelativeFrame(.vertical) { h, _ in height(h) }
-                        .padding(.top, 16)
+                        .padding(.top, 10)
                         .padding(.bottom, 8)
                         .padding(.leading, 14)
                         .padding(.trailing, 10)
@@ -61,6 +64,34 @@ struct SummaryScreen: View {
         } else {
             emptyState
         }
+    }
+
+    /// The dates on screen, and how many weigh-ins fall in them.
+    private var chartHeader: some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(Self.rangeLabel(visibleRange))
+                .font(.subheadline.weight(.semibold))
+                .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+            Spacer(minLength: 8)
+            let count = visibleStats?.count ?? 0
+            Text(count == 1 ? "1 weigh-in" : "\(count) weigh-ins")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .monospacedDigit()
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    /// "Aug 12 – Nov 12, 2026" (the year once when both ends share it), or "Nov 2022 – Nov 2026" from
+    /// about a year on screen, where days would be noise.
+    static func rangeLabel(_ range: ClosedRange<Date>) -> String {
+        let span = range.upperBound.timeIntervalSince(range.lowerBound) / 86_400
+        let interval = range.lowerBound..<max(range.upperBound, range.lowerBound.addingTimeInterval(1))
+        return span >= 300
+            ? interval.formatted(.interval.month(.abbreviated).year())
+            : interval.formatted(.interval.month(.abbreviated).day().year())
     }
 
     // MARK: Layouts
@@ -102,7 +133,7 @@ struct SummaryScreen: View {
             LatestWeightCard()
             chartSection { min(max($0 * 0.45, 260), 520) }
             if hasChart {
-                StatsPanel(stats: visibleStats, visibleRange: visibleRange, unit: settings.unit, columns: 2)
+                StatsPanel(stats: visibleStats, unit: settings.unit, columns: 2)
                 GoalCard(series: series, projection: projection, unit: settings.unit) { isEditingGoal = true }
             }
         }
@@ -118,7 +149,7 @@ struct SummaryScreen: View {
             chartSection { min(max($0 * 0.5, 340), 600) }
             if hasChart {
                 HStack(alignment: .top, spacing: 16) {
-                    StatsPanel(stats: visibleStats, visibleRange: visibleRange, unit: settings.unit, columns: 2)
+                    StatsPanel(stats: visibleStats, unit: settings.unit, columns: 2)
                     GoalCard(series: series, projection: projection, unit: settings.unit) { isEditingGoal = true }
                 }
             }
@@ -136,7 +167,7 @@ struct SummaryScreen: View {
             VStack(spacing: 16) {
                 LatestWeightCard()
                 if hasChart {
-                    StatsPanel(stats: visibleStats, visibleRange: visibleRange, unit: settings.unit, columns: 2)
+                    StatsPanel(stats: visibleStats, unit: settings.unit, columns: 2)
                     GoalCard(series: series, projection: projection, unit: settings.unit) { isEditingGoal = true }
                 }
             }
@@ -322,10 +353,9 @@ struct RangePicker: View {
 }
 
 private extension ChartRange {
-    /// "1W", "1M", "3M", "6M", "1Y", "2Y", "All".
+    /// "1M", "3M", "6M", "1Y", "2Y", "4Y", "All".
     var shortTitle: String {
         switch self {
-        case .week: "1W"
         case .month: "1M"
         case .year: "1Y"
         default: rawValue

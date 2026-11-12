@@ -91,12 +91,12 @@ final class AppSettings {
 
 /// Preset visible time spans for the chart.
 nonisolated enum ChartRange: String, CaseIterable, Identifiable, Sendable {
-    case week = "W"
     case month = "M"
     case threeMonths = "3M"
     case sixMonths = "6M"
     case year = "Y"
     case twoYears = "2Y"
+    case fourYears = "4Y"
     case all = "All"
 
     var id: String { rawValue }
@@ -104,24 +104,24 @@ nonisolated enum ChartRange: String, CaseIterable, Identifiable, Sendable {
     /// Visible length in days (nil = everything).
     var days: Int? {
         switch self {
-        case .week: 7
         case .month: 31
         case .threeMonths: 92
         case .sixMonths: 183
         case .year: 365
         case .twoYears: 730
+        case .fourYears: 1461
         case .all: nil
         }
     }
 
     var title: String {
         switch self {
-        case .week: "Week"
         case .month: "Month"
         case .threeMonths: "3 Months"
         case .sixMonths: "6 Months"
         case .year: "Year"
         case .twoYears: "2 Years"
+        case .fourYears: "4 Years"
         case .all: "All Time"
         }
     }
