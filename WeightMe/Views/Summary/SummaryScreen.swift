@@ -39,21 +39,22 @@ struct SummaryScreen: View {
     /// Range picker, chart and legend — or a placeholder while the history loads.
     @ViewBuilder private func chartSection(height: @escaping (CGFloat) -> CGFloat) -> some View {
         if hasChart {
-            // One card: range pills across the top, the chart, then the layer chips (its legend).
-            VStack(spacing: 0) {
+            // The range picker sits on the page above the card; the card holds the chart and the
+            // layer chips (its legend).
+            VStack(spacing: 10) {
                 rangePicker
-                    .padding(.horizontal, 8)
-                    .padding(.top, 6)
-                chart.containerRelativeFrame(.vertical) { h, _ in height(h) }
-                    .padding(.top, 16)
-                    .padding(.bottom, 8)
-                    .padding(.leading, 14)
-                    .padding(.trailing, 10)
-                LayerChips(longRange: isLongRange)
-                    .contentMargins(.horizontal, 8, for: .scrollContent)
-                    .padding(.bottom, 8)
+                VStack(spacing: 0) {
+                    chart.containerRelativeFrame(.vertical) { h, _ in height(h) }
+                        .padding(.top, 16)
+                        .padding(.bottom, 8)
+                        .padding(.leading, 14)
+                        .padding(.trailing, 10)
+                    LayerChips(longRange: isLongRange)
+                        .contentMargins(.horizontal, 8, for: .scrollContent)
+                        .padding(.bottom, 8)
+                }
+                .panelBackground()
             }
-            .panelBackground()
         } else if store.status == .loading || !store.entries.isEmpty {
             ProgressView()
                 .frame(maxWidth: .infinity, minHeight: 240)

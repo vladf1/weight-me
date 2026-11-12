@@ -69,6 +69,7 @@ final class WeightStore {
 
     func start() async {
         guard mode == .health else { return }
+        defer { hasStarted = true }
         guard health.isAvailable else { status = .unavailable; return }
         if let unit = await health.preferredUnit() { settings.healthUnit = unit }
         await cacheLoadTask?.value
@@ -78,6 +79,9 @@ final class WeightStore {
         }
         startStreaming()
     }
+
+    /// Set once start() has checked availability and permission.
+    @ObservationIgnored private var hasStarted = false
 
     func connectHealth() async {
         do {
@@ -91,7 +95,9 @@ final class WeightStore {
 
     /// Restarts the live query (e.g. after returning to the foreground or after an error).
     func resume() {
-        guard mode == .health, status != .needsAuthorization, status != .unavailable,
+        // Wait for start(): becoming active can happen before it has checked Health permission, and
+        // a query without permission returns nothing, which would mark the store ready and skip onboarding.
+        guard mode == .health, hasStarted, status != .needsAuthorization, status != .unavailable,
               cacheLoadTask == nil else { return }
         if streamTask == nil { startStreaming() }
     }

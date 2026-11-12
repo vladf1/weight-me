@@ -37,11 +37,14 @@ struct WeightChartView: View {
     private var isScrollable: Bool { viewport.length != nil && visibleLength < fullSpan - 3600 }
     private var visibleRange: ClosedRange<Date> { viewport.range(in: domain) }
 
-    /// Data window handed to the chart: the visible range plus one screen on each side, so scrolling
-    /// stays smooth while the number of marks stays small no matter how long the history is.
+    /// Data (and axis ticks) handed to the chart. Normally the whole history: the scroll-position
+    /// binding lags behind a fast fling, so a window built around it can end up somewhere the chart
+    /// isn't, leaving an empty plot with no dates. Only very long histories relative to the zoom
+    /// (more than 12 screens) get a window: the visible range plus three screens on each side.
     private var dataWindow: ClosedRange<Date> {
+        if fullSpan <= visibleLength * 12 { return domain }
         let range = visibleRange
-        let pad = range.upperBound.timeIntervalSince(range.lowerBound)
+        let pad = 3 * range.upperBound.timeIntervalSince(range.lowerBound)
         return range.lowerBound.addingTimeInterval(-pad)...range.upperBound.addingTimeInterval(pad)
     }
 
@@ -77,7 +80,7 @@ struct WeightChartView: View {
         let readings = windowed(series.readings, maxCount: 1500)
         let lineLayers: [(ChartLayer, [SeriesPoint])] = [ChartLayer.average90, .average30, .average7, .trend]
             .filter { shown.contains($0) }
-            .map { ($0, windowed(series.points(for: $0), maxCount: 500)) }
+            .map { ($0, windowed(series.points(for: $0), maxCount: 1500)) }
 
         Chart {
             if showsMonthlyRange {
@@ -146,8 +149,6 @@ struct WeightChartView: View {
             }
         }
         .chartLegend(.hidden)
-        // A line heading to a point just off-screen can leave the y range; keep it inside the plot.
-        .chartPlotStyle { $0.clipped() }
         .chartXScale(domain: domain)
         .chartYScale(domain: yScale.domain)
         .chartYAxis {
@@ -213,6 +214,10 @@ struct WeightChartView: View {
         }
         .animation(.snappy(duration: 0.25), value: yScale)
         .simultaneousGesture(magnifyGesture)
+        // A line heading to a point just off-screen can leave the y range; keep it inside the chart.
+        // (Clipping the plot itself via chartPlotStyle blanks a scrollable chart after it scrolls.)
+        // A little slack so the top and bottom axis labels, which overhang the frame, aren't cut.
+        .mask { Rectangle().padding(-10) }
         .dynamicTypeSize(...DynamicTypeSize.xxLarge)
         .accessibilityLabel("Weight chart")
         .accessibilityIdentifier("weightChart")

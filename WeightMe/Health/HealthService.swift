@@ -19,7 +19,9 @@ nonisolated final class HealthService: @unchecked Sendable {
     func needsAuthorizationPrompt() async -> Bool {
         guard isAvailable else { return false }
         let status = try? await store.statusForAuthorizationRequest(toShare: [Self.bodyMass], read: [Self.bodyMass])
-        return status == .shouldRequest || status == nil
+        // Ask unless HealthKit says it's already settled: a fresh device can answer .unknown, and
+        // skipping the prompt then leaves every write failing with "authorization not determined".
+        return status != .unnecessary
     }
 
     func requestAuthorization() async throws {
