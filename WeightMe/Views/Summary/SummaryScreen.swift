@@ -9,6 +9,7 @@ struct SummaryScreen: View {
     @State private var viewport = ChartViewport(start: .now, length: nil)
     @State private var viewportInitialized = false
     @State private var selectedDate: Date?
+    @State private var pickerHeight: CGFloat = 32
     @State private var isEditingGoal = false
     @State private var availableWidth: CGFloat = 1024
 
@@ -48,7 +49,7 @@ struct SummaryScreen: View {
                         .padding(.horizontal, 16)
                         .padding(.top, 14)
                     chart.containerRelativeFrame(.vertical) { h, _ in height(h) }
-                        .padding(.top, 10)
+                        .padding(.top, 12)
                         .padding(.bottom, 8)
                         .padding(.leading, 14)
                         .padding(.trailing, 10)
@@ -66,9 +67,10 @@ struct SummaryScreen: View {
         }
     }
 
-    /// The dates on screen, and how many weigh-ins fall in them.
+    /// The dates on screen, and how many entries fall in them.
     private var chartHeader: some View {
-        HStack(alignment: .firstTextBaseline) {
+        // Centered rather than baseline-aligned: on the date's baseline the smaller count read as low.
+        HStack(alignment: .center) {
             Text(Self.rangeLabel(visibleRange))
                 .font(.subheadline.weight(.semibold))
                 .monospacedDigit()
@@ -76,7 +78,7 @@ struct SummaryScreen: View {
                 .minimumScaleFactor(0.8)
             Spacer(minLength: 8)
             let count = visibleStats?.count ?? 0
-            Text(count == 1 ? "1 weigh-in" : "\(count) weigh-ins")
+            Text(count == 1 ? "1 entry" : "\(count) entries")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
@@ -84,14 +86,10 @@ struct SummaryScreen: View {
         .accessibilityElement(children: .combine)
     }
 
-    /// "Aug 12 – Nov 12, 2026" (the year once when both ends share it), or "Nov 2022 – Nov 2026" from
-    /// about a year on screen, where days would be noise.
+    /// "Aug 12 – Nov 12, 2026", or "Mar 12, 2022 – Mar 12, 2026" across years.
     static func rangeLabel(_ range: ClosedRange<Date>) -> String {
-        let span = range.upperBound.timeIntervalSince(range.lowerBound) / 86_400
         let interval = range.lowerBound..<max(range.upperBound, range.lowerBound.addingTimeInterval(1))
-        return span >= 300
-            ? interval.formatted(.interval.month(.abbreviated).year())
-            : interval.formatted(.interval.month(.abbreviated).day().year())
+        return interval.formatted(.interval.month(.abbreviated).day().year())
     }
 
     // MARK: Layouts
@@ -183,18 +181,28 @@ struct SummaryScreen: View {
     }
 
     private var rangePicker: some View {
-        HStack {
+        let showsReset = isCustomZoom || isScrolledBack
+        return HStack(spacing: 8) {
             // Picking a range always shows its most recent stretch (Y = the last 365 days, M = the last month…).
             RangePicker(selection: Binding(get: { settings.chartRange }, set: { select($0, anchorToEnd: true) }))
-            if isCustomZoom || isScrolledBack {
-                Button("Reset", systemImage: "arrow.uturn.backward") { select(settings.chartRange, anchorToEnd: true) }
-                    .labelStyle(.iconOnly)
-                    .buttonStyle(.bordered)
-                    .buttonBorderShape(.circle)
-                    .transition(.scale.combined(with: .opacity))
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { pickerHeight = $0 }
+            if showsReset {
+                // A circle exactly the picker's height, in the picker's track color, so the row (and the
+                // chart below) doesn't move when it appears.
+                Button { select(settings.chartRange, anchorToEnd: true) } label: {
+                    Image(systemName: "arrow.uturn.backward")
+                        .font(.footnote.weight(.semibold))
+                        .frame(width: pickerHeight, height: pickerHeight)
+                        .background(Color(.systemGray5), in: Circle())
+                        .contentShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.tint)
+                .accessibilityLabel("Reset")
+                .transition(.scale.combined(with: .opacity))
             }
         }
-        .animation(.snappy, value: isCustomZoom || isScrolledBack)
+        .animation(.snappy, value: showsReset)
     }
 
     private var emptyState: some View {

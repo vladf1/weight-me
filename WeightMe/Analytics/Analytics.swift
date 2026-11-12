@@ -39,6 +39,9 @@ nonisolated struct RangeStats: Sendable, Equatable {
     var change: Double
     /// kg per week, from a least-squares fit over the range.
     var weeklyRate: Double?
+    /// Typical size of the change between readings taken within a few days of each other (kg), i.e.
+    /// day-to-day noise such as water weight. Nil when no two readings are that close.
+    var dailySwing: Double? = nil
 }
 
 /// Pure functions that turn raw readings into chartable series. All inputs must be sorted by date.
@@ -221,8 +224,16 @@ nonisolated enum Analytics {
         }
         let span = last.date.timeIntervalSince(first.date)
         let rate = span >= 6 * 86_400 ? linearRegression(slice).map { $0.slope * 7 } : nil
+        // Median absolute change between readings at most three days apart: the median shrugs off the
+        // odd big jump, and the three-day limit keeps sparse stretches from counting as "swings".
+        var swings: [Double] = []
+        for (a, b) in zip(slice, slice.dropFirst()) where b.date.timeIntervalSince(a.date) <= 3 * 86_400 {
+            swings.append(abs(b.kg - a.kg))
+        }
+        swings.sort()
+        let swing = swings.isEmpty ? nil : swings[swings.count / 2]
         return RangeStats(count: slice.count, first: first, last: last, minimum: minimum, maximum: maximum,
-                          mean: sum / Double(slice.count), change: change, weeklyRate: rate)
+                          mean: sum / Double(slice.count), change: change, weeklyRate: rate, dailySwing: swing)
     }
 
     /// Binary-searched sub-range of a date-sorted array.

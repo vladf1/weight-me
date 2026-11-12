@@ -101,9 +101,8 @@ struct StatsPanel: View {
 
     var body: some View {
         let columns = dynamicTypeSize.isAccessibilitySize ? 1 : self.columns
+        // No title: the chart card's header already names the dates and entry count these describe.
         VStack(alignment: .leading, spacing: 12) {
-            // The dates in view are in the chart card's header.
-            Text("In View").font(.headline)
             if let stats {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: columns), spacing: 10) {
                     StatTile(title: "Change", value: unit.formatDelta(stats.change),
@@ -115,8 +114,10 @@ struct StatsPanel: View {
                              detail: stats.minimum.date.formatted(.dateTime.month(.abbreviated).day().year(.twoDigits)), tint: .primary)
                     StatTile(title: "Highest", value: unit.format(stats.maximum.kg),
                              detail: stats.maximum.date.formatted(.dateTime.month(.abbreviated).day().year(.twoDigits)), tint: .primary)
-                    StatTile(title: "Average", value: unit.format(stats.mean), detail: nil, tint: .primary)
-                    StatTile(title: "Readings", value: stats.count.formatted(), detail: nil, tint: .primary)
+                    StatTile(title: "Average", value: unit.format(stats.mean), detail: "mean", tint: .primary)
+                    StatTile(title: "Daily swing",
+                             value: stats.dailySwing.map { "±" + unit.format($0) } ?? "—",
+                             detail: "typical day to day", tint: .primary)
                 }
             } else {
                 Text("No readings in this period.")
