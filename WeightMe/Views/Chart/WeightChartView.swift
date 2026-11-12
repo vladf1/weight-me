@@ -19,7 +19,11 @@ struct ProjectionLine: Equatable {
     var reachesGoal: Bool
 }
 
-/// The main interactive weight chart: scroll, pinch to zoom, long-press (or drag in All) to inspect.
+/// The main interactive weight chart: drag to pan, pinch to zoom, long-press (or drag in All) to inspect.
+///
+/// Panning is ours, not Swift Charts' scrollable axes: the chart only ever draws the visible window
+/// (`chartXScale(domain: visibleRange)`). With native scrolling the chart's own offset and our
+/// position binding could drift apart on fast flings, leaving a blank plot you couldn't drag out of.
 struct WeightChartView: View {
     let series: DerivedSeries
     let layers: Set<ChartLayer>
@@ -31,20 +35,19 @@ struct WeightChartView: View {
     @Binding var selectedDate: Date?
 
     @State private var zoomBaseLength: TimeInterval?
+    @State private var panStart: Date?
+    @State private var momentum: Task<Void, Never>?
 
     private var fullSpan: TimeInterval { domain.upperBound.timeIntervalSince(domain.lowerBound) }
     private var visibleLength: TimeInterval { min(viewport.length ?? fullSpan, fullSpan) }
     private var isScrollable: Bool { viewport.length != nil && visibleLength < fullSpan - 3600 }
     private var visibleRange: ClosedRange<Date> { viewport.range(in: domain) }
 
-    /// Data (and axis ticks) handed to the chart. Normally the whole history: the scroll-position
-    /// binding lags behind a fast fling, so a window built around it can end up somewhere the chart
-    /// isn't, leaving an empty plot with no dates. Only very long histories relative to the zoom
-    /// (more than 12 screens) get a window: the visible range plus three screens on each side.
+    /// Data handed to the chart: the visible window plus one screen each side, so lines run off the
+    /// edges toward their neighbors instead of stopping short. The plot clips the rest.
     private var dataWindow: ClosedRange<Date> {
-        if fullSpan <= visibleLength * 12 { return domain }
         let range = visibleRange
-        let pad = 3 * range.upperBound.timeIntervalSince(range.lowerBound)
+        let pad = range.upperBound.timeIntervalSince(range.lowerBound)
         return range.lowerBound.addingTimeInterval(-pad)...range.upperBound.addingTimeInterval(pad)
     }
 
@@ -101,28 +104,53 @@ struct WeightChartView: View {
             }
 
             if shown.contains(.readings) {
-                // A plain line through every entry. It steps back when a smoothed line is on top of it.
+                // A plain line through every entry, broken across long gaps (a lone reading gets a dot).
+                // It steps back when a smoothed line is on top of it.
                 let isMain = lineLayers.isEmpty
-                ForEach(readings) { p in
-                    LineMark(x: .value("Date", p.date), y: .value("Weight", p.kg), series: .value("Series", "readings"))
-                        .foregroundStyle(Color.gray.opacity(isMain ? 0.9 : 0.35))
-                        .lineStyle(StrokeStyle(lineWidth: isMain ? 2.5 : 1.5, lineCap: .round, lineJoin: .round))
+                let style = Color.gray.opacity(isMain ? 0.9 : 0.35)
+                ForEach(Self.splitAtGaps(readings, maxGap: gapLimit)) { p in
+                    if p.isLone {
+                        PointMark(x: .value("Date", p.point.date), y: .value("Weight", p.point.kg))
+                            .symbolSize(isMain ? 30 : 16)
+                            .foregroundStyle(style)
+                    } else {
+                        LineMark(x: .value("Date", p.point.date), y: .value("Weight", p.point.kg),
+                                 series: .value("Series", "readings-\(p.run)"))
+                            .foregroundStyle(style)
+                            .lineStyle(StrokeStyle(lineWidth: isMain ? 2.5 : 1.5, lineCap: .round, lineJoin: .round))
+                    }
                 }
             }
 
             ForEach(lineLayers, id: \.0) { layer, points in
                 let isTrend = layer == .trend
-                // Standing in for Readings on a long range, the 7-day line connects across gaps like the
-                // readings line does. Otherwise sparse stretches (a reading every week or two) would be
-                // one-point segments, which draw nothing.
-                let connectsGaps = layer == .average7 && isLongRange && layers.contains(.readings)
-                ForEach(points) { p in
-                    LineMark(x: .value("Date", p.date), y: .value("Weight", p.kg),
-                             series: .value("Series", connectsGaps ? layer.rawValue : "\(layer.rawValue)-\(p.segment)"))
-                        .foregroundStyle(ChartPalette.color(for: layer))
-                        .lineStyle(StrokeStyle(lineWidth: isTrend ? 3 : 2, lineCap: .round, lineJoin: .round))
-                        // Straight segments when connecting gaps: a curve overshoots between far-apart points.
-                        .interpolationMethod(connectsGaps ? .linear : .monotone)
+                // Standing in for Readings on a long range, the 7-day line breaks the way the readings line
+                // does (only across long gaps) rather than at every week without data, which would leave
+                // sparse stretches as one-point segments that draw nothing.
+                let standsIn = layer == .average7 && isLongRange && layers.contains(.readings)
+                if standsIn {
+                    ForEach(Self.splitAtGaps(points, maxGap: gapLimit)) { p in
+                        if p.isLone {
+                            PointMark(x: .value("Date", p.point.date), y: .value("Weight", p.point.kg))
+                                .symbolSize(30)
+                                .foregroundStyle(ChartPalette.color(for: layer))
+                        } else {
+                            LineMark(x: .value("Date", p.point.date), y: .value("Weight", p.point.kg),
+                                     series: .value("Series", "\(layer.rawValue)-\(p.run)"))
+                                .foregroundStyle(ChartPalette.color(for: layer))
+                                .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+                                // Straight segments: a curve overshoots between far-apart points.
+                                .interpolationMethod(.linear)
+                        }
+                    }
+                } else {
+                    ForEach(points) { p in
+                        LineMark(x: .value("Date", p.date), y: .value("Weight", p.kg),
+                                 series: .value("Series", "\(layer.rawValue)-\(p.segment)"))
+                            .foregroundStyle(ChartPalette.color(for: layer))
+                            .lineStyle(StrokeStyle(lineWidth: isTrend ? 3 : 2, lineCap: .round, lineJoin: .round))
+                            .interpolationMethod(.monotone)
+                    }
                 }
             }
 
@@ -149,7 +177,8 @@ struct WeightChartView: View {
             }
         }
         .chartLegend(.hidden)
-        .chartXScale(domain: domain)
+        .chartXScale(domain: visibleRange)
+        .chartPlotStyle { $0.clipped() }
         .chartYScale(domain: yScale.domain)
         .chartYAxis {
             AxisMarks(position: .trailing, values: yScale.ticks) { value in
@@ -170,19 +199,23 @@ struct WeightChartView: View {
                 }
             }
         }
-        .chartScrollableAxes(isScrollable ? .horizontal : [])
-        .chartXVisibleDomain(length: visibleLength)
-        .chartScrollPosition(x: Binding(
-            get: { viewport.start },
-            set: { newValue in
-                if viewport.start != newValue { viewport.start = newValue }
-            }
-        ))
-        .chartXSelection(value: $selectedDate)
         .chartOverlay(alignment: .topLeading) { proxy in
-            // Overlays rather than mark annotations: scrollable charts clip annotations and a
-            // rule's leading annotation scrolls off-screen with the start of the data.
+          ZStack(alignment: .topLeading) {
+            // Catches drags anywhere on the plot, including stretches with nothing drawn.
+            Rectangle().fill(.clear).contentShape(Rectangle())
+                .frame(width: proxy.plotSize.width, height: proxy.plotSize.height)
+                .gesture(interaction(proxy: proxy))
+            // Overlays rather than mark annotations, so labels can sit anywhere over the plot.
             ZStack(alignment: .topLeading) {
+                if !series.readings.isEmpty, Analytics.slice(series.readings, in: visibleRange).isEmpty {
+                    VStack(spacing: 2) {
+                        Text("No weights in this period").font(.subheadline.weight(.semibold))
+                        Text(isScrollable ? "Swipe to see more" : "").font(.caption).foregroundStyle(.secondary)
+                    }
+                    .padding(.horizontal, 14).padding(.vertical, 8)
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                    .frame(width: proxy.plotSize.width, height: proxy.plotSize.height)
+                }
                 if shown.contains(isLongRange ? .average7 : .readings), selection == nil {
                     EndpointLabels(proxy: proxy, visible: visiblePrimary, leftEdge: visibleRange.lowerBound, unit: unit)
                 }
@@ -211,16 +244,60 @@ struct WeightChartView: View {
                 }
             }
             .allowsHitTesting(false)
+          }
         }
-        .animation(.snappy(duration: 0.25), value: yScale)
+        // No implicit animation on y-scale changes: animating the marks while a fast fling swaps the
+        // data under them could leave the chart stuck mid-transition with no line and no dates.
         .simultaneousGesture(magnifyGesture)
-        // A line heading to a point just off-screen can leave the y range; keep it inside the chart.
-        // (Clipping the plot itself via chartPlotStyle blanks a scrollable chart after it scrolls.)
-        // A little slack so the top and bottom axis labels, which overhang the frame, aren't cut.
-        .mask { Rectangle().padding(-10) }
         .dynamicTypeSize(...DynamicTypeSize.xxLarge)
         .accessibilityLabel("Weight chart")
         .accessibilityIdentifier("weightChart")
+    }
+
+    // MARK: Pan and inspect
+
+    /// Long-press then drag inspects; a plain drag pans (in All, where there's nothing to pan,
+    /// a drag inspects straight away).
+    private func interaction(proxy: ChartProxy) -> some Gesture {
+        let plotWidth = max(proxy.plotSize.width, 1)
+        func select(at x: CGFloat) {
+            if let date: Date = proxy.value(atX: x) { selectedDate = date }
+        }
+        let inspect = LongPressGesture(minimumDuration: isScrollable ? 0.3 : 0)
+            .sequenced(before: DragGesture(minimumDistance: 0))
+            .onChanged { value in
+                if case .second(true, let drag?) = value { select(at: drag.location.x) }
+            }
+            .onEnded { _ in selectedDate = nil }
+        let pan = DragGesture(minimumDistance: 8)
+            .onChanged { value in
+                guard isScrollable else { return }
+                momentum?.cancel()
+                let start = panStart ?? viewport.start
+                if panStart == nil { panStart = start }
+                let secondsPerPoint = visibleLength / plotWidth
+                setStart(start.addingTimeInterval(-value.translation.width * secondsPerPoint))
+            }
+            .onEnded { value in
+                panStart = nil
+                guard isScrollable else { return }
+                // A little momentum: glide in the direction of the flick, slowing to a stop.
+                let secondsPerPoint = visibleLength / plotWidth
+                var velocity = -(value.predictedEndTranslation.width - value.translation.width) * secondsPerPoint * 4
+                momentum = Task { @MainActor in
+                    while abs(velocity) * 0.016 > visibleLength / 2000, !Task.isCancelled {
+                        setStart(viewport.start.addingTimeInterval(velocity * 0.016))
+                        velocity *= 0.92
+                        try? await Task.sleep(for: .milliseconds(16))
+                    }
+                }
+            }
+        return inspect.exclusively(before: pan)
+    }
+
+    private func setStart(_ start: Date) {
+        let latest = domain.upperBound.addingTimeInterval(-visibleLength)
+        viewport.start = min(max(start, domain.lowerBound), max(latest, domain.lowerBound))
     }
 
     // MARK: Pinch to zoom
@@ -243,6 +320,33 @@ struct WeightChartView: View {
 
     private var visibleDays: Double { visibleLength / 86_400 }
 
+    /// Readings further apart than this aren't joined by a line: a third of the visible span, so a
+    /// stretch with no data shows as empty instead of as a long diagonal between distant readings.
+    private var gapLimit: TimeInterval { visibleLength / 3 }
+
+    struct RunPoint: Identifiable {
+        var point: SeriesPoint
+        /// Which unbroken run of the line this point belongs to.
+        var run: Int
+        /// No neighbor within the gap limit on either side: drawn as a dot.
+        var isLone: Bool
+        var id: Date { point.date }
+    }
+
+    /// Splits a line wherever consecutive points are more than `maxGap` apart.
+    static func splitAtGaps(_ points: [SeriesPoint], maxGap: TimeInterval) -> [RunPoint] {
+        var result: [RunPoint] = []
+        result.reserveCapacity(points.count)
+        var run = 0
+        for (i, p) in points.enumerated() {
+            let joinsPrevious = i > 0 && p.date.timeIntervalSince(points[i - 1].date) <= maxGap
+            let joinsNext = i + 1 < points.count && points[i + 1].date.timeIntervalSince(p.date) <= maxGap
+            if i > 0, !joinsPrevious { run += 1 }
+            result.append(RunPoint(point: p, run: run, isLone: !joinsPrevious && !joinsNext))
+        }
+        return result
+    }
+
     /// Long ranges plot the 7-day average instead of every reading (see `longRangeDays`).
     private var isLongRange: Bool { visibleDays >= longRangeDays }
     private var shown: Set<ChartLayer> { layers.shown(longRange: isLongRange) }
@@ -264,7 +368,7 @@ struct WeightChartView: View {
         case ...3000: (.year, 1)
         default: (.year, 2)
         }
-        let window = dataWindow
+        let window = visibleRange
         guard var tick = calendar.dateInterval(of: component == .weekOfYear ? .weekOfYear : (component == .day ? .day : (component == .month ? .month : .year)),
                                                for: window.lowerBound)?.start else { return [] }
         // Align multi-month / multi-year strides to calendar boundaries (Jan/Apr/Jul/Oct, even years…).
@@ -278,7 +382,7 @@ struct WeightChartView: View {
         var ticks: [Date] = []
         while tick <= window.upperBound, ticks.count < 120 {
             // A tick before the first reading would put its label left of the plot, outside the card.
-            if tick >= domain.lowerBound { ticks.append(tick) }
+            if tick >= max(domain.lowerBound, window.lowerBound) { ticks.append(tick) }
             tick = calendar.date(byAdding: component, value: count, to: tick)!
         }
         return ticks
@@ -310,7 +414,15 @@ struct WeightChartView: View {
         }
         let layerList: [ChartLayer] = [.readings, .average7, .average30, .average90, .trend]
         for layer in layerList where shown.contains(layer) {
-            include(Analytics.slice(series.points(for: layer), in: range))
+            let points = series.points(for: layer)
+            include(Analytics.slice(points, in: range))
+            // Where a line crosses the left and right edges on its way to a reading off-screen. Keeping
+            // those in range keeps the visible part of the line inside the plot, with no clipping (clipping
+            // the plot of a scrollable chart hides its date labels).
+            let breaksAtGaps = layer == .readings || (layer == .average7 && isLongRange && layers.contains(.readings))
+            for edge in [range.lowerBound, range.upperBound] {
+                if let kg = Self.lineValue(points, at: edge, maxGap: breaksAtGaps ? gapLimit : nil) { lo = min(lo, kg); hi = max(hi, kg) }
+            }
         }
         if showsMonthlyRange {
             for m in series.monthly where range.contains(m.midMonth) { lo = min(lo, m.minKg); hi = max(hi, m.maxKg) }
@@ -330,6 +442,27 @@ struct WeightChartView: View {
             }
         }
         return YAxisScale.make(minKg: lo, maxKg: hi, unit: unit)
+    }
+
+    /// The straight-line value of a series at `date`, between the points on either side of it.
+    /// Nil at the ends of the data, or across a gap the line doesn't draw (longer than `maxGap`, or
+    /// between segments when there's no `maxGap`).
+    static func lineValue(_ points: [SeriesPoint], at date: Date, maxGap: TimeInterval?) -> Double? {
+        var lo = 0, hi = points.count
+        while lo < hi {
+            let mid = (lo + hi) / 2
+            if points[mid].date < date { lo = mid + 1 } else { hi = mid }
+        }
+        guard lo > 0, lo < points.count else { return nil }
+        let a = points[lo - 1], b = points[lo]
+        if let maxGap {
+            guard b.date.timeIntervalSince(a.date) <= maxGap else { return nil }
+        } else {
+            guard a.segment == b.segment else { return nil }
+        }
+        let span = b.date.timeIntervalSince(a.date)
+        guard span > 0 else { return b.kg }
+        return a.kg + (b.kg - a.kg) * date.timeIntervalSince(a.date) / span
     }
 }
 
