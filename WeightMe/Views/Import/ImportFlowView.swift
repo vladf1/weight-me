@@ -107,6 +107,7 @@ struct ImportFlowView: View {
                     bullet("doc.text", "Works with Lose It! exports (Date, Weight, Last Updated, Deleted) and WeightMe's own exports.")
                     bullet("plus.circle", "Imported weights are **added** to Apple Health as new entries from WeightMe.")
                     bullet("shield.lefthalf.filled", "**Nothing already in Apple Health is changed or overwritten.** Any day that already has a weight in Apple Health is skipped.")
+                    bullet("clock.arrow.circlepath", "Restoring a WeightMe export brings back every reading, including several on one day. Only readings Apple Health already has at the same time are skipped.")
                     bullet("eye", "You'll review every row, see a chart of what will be added, and confirm twice before anything is written.")
                     bullet("arrow.uturn.backward", "Each import can be undone later from Settings › Import History.")
                 }
@@ -250,14 +251,16 @@ struct ImportReviewView: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
-                SummaryRow(symbol: "checkmark.shield", color: .blue, title: "Skipped — day already in Apple Health",
+                SummaryRow(symbol: "checkmark.shield", color: .blue,
+                           title: plan.matching == .byReading ? "Skipped — already in Apple Health" : "Skipped — day already in Apple Health",
                            count: plan.existingCount)
                 if plan.deletedCount > 0 {
                     SummaryRow(symbol: "trash.slash", color: .secondary, title: "Skipped — marked deleted in Lose It",
                                count: plan.deletedCount)
                 }
                 if plan.duplicateInFileCount > 0 {
-                    SummaryRow(symbol: "doc.on.doc", color: .secondary, title: "Skipped — same day appears twice in file",
+                    SummaryRow(symbol: "doc.on.doc", color: .secondary,
+                               title: plan.matching == .byReading ? "Skipped — same time appears twice in file" : "Skipped — same day appears twice in file",
                                count: plan.duplicateInFileCount)
                 }
                 if plan.invalidCount > 0 {
@@ -280,29 +283,35 @@ struct ImportReviewView: View {
                 }
             }
 
-            Section {
-                if !activeFile.unitsSpecified {
-                    Picker("Weights in the file are in", selection: $unit) {
-                        ForEach(WeightUnit.allCases) { Text($0.name).tag($0) }
+            // WeightMe exports state the unit and exact time of every row, so there's nothing to choose.
+            let asksUnit = !activeFile.unitsSpecified
+            let asksTime = activeFile.rows.contains(where: { !$0.hasTime && $0.components != nil })
+            let asksDateOrder = activeFile.rows.contains(where: { $0.rawDate.contains("/") || $0.rawDate.contains(".") })
+            if asksUnit || asksTime || asksDateOrder {
+                Section {
+                    if asksUnit {
+                        Picker("Weights in the file are in", selection: $unit) {
+                            ForEach(WeightUnit.allCases) { Text($0.name).tag($0) }
+                        }
                     }
-                }
-                if activeFile.rows.contains(where: { !$0.hasTime && $0.components != nil }) {
-                    DatePicker("Time for date-only rows", selection: $timeOfDay, displayedComponents: .hourAndMinute)
-                }
-                if activeFile.rows.contains(where: { $0.rawDate.contains("/") || $0.rawDate.contains(".") }) {
-                    Picker("Date format", selection: $dateOrder) {
-                        ForEach(DateOrder.allCases) { Text($0.title).tag($0) }
+                    if asksTime {
+                        DatePicker("Time for date-only rows", selection: $timeOfDay, displayedComponents: .hourAndMinute)
                     }
-                    if let sample = activeFile.rows.first(where: { $0.components != nil }) {
-                        Text("“\(sample.rawDate)” is read as \(sampleDate(sample))")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                    if asksDateOrder {
+                        Picker("Date format", selection: $dateOrder) {
+                            ForEach(DateOrder.allCases) { Text($0.title).tag($0) }
+                        }
+                        if let sample = activeFile.rows.first(where: { $0.components != nil }) {
+                            Text("“\(sample.rawDate)” is read as \(sampleDate(sample))")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
+                } header: {
+                    Text("Interpretation")
+                } footer: {
+                    Text("Lose It! exports don't include a unit or time of day. Double-check these before importing.")
                 }
-            } header: {
-                Text("Interpretation")
-            } footer: {
-                Text("Lose It! exports don't include a unit or time of day. Double-check these before importing.")
             }
 
             Section("Preview") {
@@ -321,7 +330,7 @@ struct ImportReviewView: View {
                     Text("None").foregroundStyle(.secondary)
                 }
                 ForEach(filtered.prefix(500)) { row in
-                    ImportRowView(row: row, unit: unit)
+                    ImportRowView(row: row, unit: unit, matching: plan.matching)
                 }
                 if filtered.count > 500 {
                     Text("…and \(filtered.count - 500) more")
@@ -425,6 +434,7 @@ private struct SummaryRow: View {
 private struct ImportRowView: View {
     let row: ImportPlan.Row
     let unit: WeightUnit
+    let matching: ImportPlan.Matching
 
     var body: some View {
         HStack(alignment: .top) {
@@ -457,8 +467,8 @@ private struct ImportRowView: View {
         switch row.status {
         case .willImport: "Will be added"
         case .existsInHealth(let values):
-            "Skipped: Apple Health already has \(values.map { unit.format($0) }.joined(separator: ", ")) that day"
-        case .duplicateInFile(let kept): "Skipped: same day as line \(kept)"
+            "Skipped: Apple Health already has \(values.map { unit.format($0) }.joined(separator: ", ")) \(matching == .byReading ? "at this time" : "that day")"
+        case .duplicateInFile(let kept): "Skipped: same \(matching == .byReading ? "time" : "day") as line \(kept)"
         case .deletedInSource: "Skipped: marked deleted in Lose It"
         case .invalid(let reason): reason
         }

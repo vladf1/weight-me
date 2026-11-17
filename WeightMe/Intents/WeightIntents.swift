@@ -1,5 +1,6 @@
 import AppIntents
 import Foundation
+import UniformTypeIdentifiers
 
 enum WeightIntentError: Error, CustomLocalizedStringResourceConvertible {
     case implausible(String)
@@ -76,6 +77,50 @@ struct OpenLogWeightIntent: AppIntent {
         AppDependencies.shared.router?.isAddingEntry = true
         return .result()
     }
+}
+
+/// Hands the whole history to Shortcuts as the same CSV as Settings › Export to CSV, so a personal automation
+/// can save a backup wherever the user chooses. WeightMe itself never uploads anything (guideline 5.1.3).
+struct ExportWeightHistoryIntent: AppIntent {
+    static let title: LocalizedStringResource = "Export Weight History"
+    static let description = IntentDescription(
+        "Returns every weight reading as a CSV file that WeightMe can import again. Follow it with Save File in a weekly automation to keep a backup.",
+        categoryName: "Weight")
+
+    @Parameter(title: "Unit", description: "Defaults to the unit chosen in WeightMe.")
+    var unit: WeightUnit?
+
+    @Parameter(title: "Include Other Apps", description: "Also export readings written by other apps, such as a smart scale.",
+               default: true)
+    var includeOtherApps: Bool
+
+    static var parameterSummary: some ParameterSummary {
+        Summary("Export weight history") {
+            \.$unit
+            \.$includeOtherApps
+        }
+    }
+
+    @MainActor
+    func perform() async throws -> some IntentResult & ReturnsValue<IntentFile> {
+        guard let store = AppDependencies.shared.store else { throw WeightIntentError.noData }
+        // Picks up anything new in Health. Health can't be read while the phone is locked; then this
+        // exports the app's copy from the last sync instead.
+        await store.refreshOnce()
+        let entries = includeOtherApps ? store.entries : store.entries.filter(\.isOwn)
+        // Never hand back an empty file: an automation would save it as if it were a good backup.
+        guard !entries.isEmpty else { throw WeightIntentError.noData }
+        let csv = CSVExport.makeCSV(entries: entries, unit: unit ?? AppDependencies.shared.settings?.unit ?? .pounds)
+        return .result(value: IntentFile(data: Data(csv.utf8), filename: CSVExport.fileName(), type: .commaSeparatedText))
+    }
+}
+
+extension WeightUnit: AppEnum {
+    static let typeDisplayRepresentation: TypeDisplayRepresentation = "Unit"
+    static let caseDisplayRepresentations: [WeightUnit: DisplayRepresentation] = [
+        .pounds: "Pounds",
+        .kilograms: "Kilograms",
+    ]
 }
 
 struct WeightMeShortcuts: AppShortcutsProvider {

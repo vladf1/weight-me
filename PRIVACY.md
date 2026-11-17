@@ -15,7 +15,8 @@ control.
   (in the app's private storage and, for the widget, a small summary in the app's shared container) so it
   opens quickly. Deleting the app deletes these copies; your Apple Health data stays in Apple Health.
 - **CSV files.** WeightMe reads a CSV file only when you choose one to import, and creates one only when
-  you export. Where an exported file goes (Files, AirDrop, email…) is up to you.
+  you export, either from the app or from the "Export Weight History" action in a shortcut you set up.
+  Where an exported file goes (Files, AirDrop, email…) is up to you.
 
 ## What WeightMe does not do
 

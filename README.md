@@ -17,9 +17,13 @@ A deliberately simple weight tracker for iPhone, iPad and iPhone Duo — a repla
   - Press-and-hold to inspect any reading with the averages at that moment
   - "In View" stats that follow the visible range: change, weekly rate, low, high, average, count
 - **History table** — grouped list on iPhone, sortable multi-column table on iPad. Entries WeightMe wrote can be edited or deleted; entries from other apps are read-only (a HealthKit rule).
-- **CSV export** — WeightMe's own format with exact timestamps, units and sources.
+- **CSV export** — WeightMe's own format with exact timestamps, units and sources. The "Export Weight History"
+  Shortcuts action returns the same file, so a weekly personal automation can save a backup wherever you like
+  (WeightMe itself never uploads anything).
 - **CSV import** (Lose It! export or WeightMe export) built to be hard to get wrong:
   - never overwrites — any day already in Apple Health is skipped
+  - restoring a WeightMe export brings back every reading (several per day included); only readings Health already
+    has at the same time, to the second, are skipped, so restoring twice adds nothing
   - rows marked deleted in Lose It are skipped; duplicate days in the file keep the most recently updated row
   - review screen with counts, warnings (e.g. "these look like pounds"), a preview chart and every row
   - confirm in an alert, then type the number of entries to confirm
@@ -27,7 +31,7 @@ A deliberately simple weight tracker for iPhone, iPad and iPhone Duo — a repla
 - **Widgets** — Home Screen (small/medium) and Lock Screen (rectangular/circular/inline); tap to log.
 - **Apple Watch** — shows your latest weight and logs a new one with the Digital Crown, straight into Apple Health
   on the watch (no phone needed; Health syncs it to the iPhone).
-- **Siri & Shortcuts** — "Log my weight in WeightMe", "What's my weight in WeightMe", and an "Open Log Weight" action for the Action button.
+- **Siri & Shortcuts** — "Log my weight in WeightMe", "What's my weight in WeightMe", an "Open Log Weight" action for the Action button, and "Export Weight History" for backups.
 
 ## Requirements
 

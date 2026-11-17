@@ -58,12 +58,43 @@ struct IntentTests {
         _ = try store
         _ = try await GetLatestWeightIntent().perform()
     }
+
+    @Test func exportWeightHistoryReturnsAFileWeightMeCanRestore() async throws {
+        let store = try store
+        var intent = ExportWeightHistoryIntent()
+        intent.unit = .kilograms
+        intent.includeOtherApps = true
+        let file = try #require(try await intent.perform().value)
+        #expect(file.filename == CSVExport.fileName())
+        let parsed = try WeightCSVImport.parse(try #require(CSV.decode(file.data)))
+        #expect(parsed.format == .weightMe)
+        #expect(parsed.rows.count == store.entries.count)
+        #expect(parsed.rows.allSatisfy { $0.unit == .kilograms })
+        // Everything in the file is already in Health, so restoring it would add nothing.
+        let plan = ImportPlan.build(file: parsed, unit: .kilograms, defaultHour: 8, defaultMinute: 0, existing: store.entries)
+        #expect(plan.importCount == 0)
+    }
+
+    @Test func exportWeightHistoryCanLeaveOutOtherApps() async throws {
+        let store = try store
+        var intent = ExportWeightHistoryIntent()
+        intent.unit = nil
+        intent.includeOtherApps = false
+        let own = store.entries.filter(\.isOwn).count
+        if own == 0 {
+            await #expect(throws: WeightIntentError.self) { _ = try await intent.perform() }
+        } else {
+            let file = try #require(try await intent.perform().value)
+            #expect(try WeightCSVImport.parse(try #require(CSV.decode(file.data))).rows.count == own)
+        }
+    }
 }
 
 /// App Store Connect rejects uploads whose App Intent descriptions contain "Apple" (error 90626).
 struct IntentMetadataTests {
     @Test func descriptionsDontMentionApple() {
-        let descriptions = [LogWeightIntent.description, GetLatestWeightIntent.description, OpenLogWeightIntent.description]
+        let descriptions = [LogWeightIntent.description, GetLatestWeightIntent.description, OpenLogWeightIntent.description,
+                            ExportWeightHistoryIntent.description]
         for description in descriptions {
             let text = String(localized: description.descriptionText)
             #expect(!text.localizedCaseInsensitiveContains("apple"), "\(text)")

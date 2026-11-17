@@ -89,7 +89,7 @@ struct ExportView: View {
                     }
                     Toggle("Include entries from other apps", isOn: $includeOtherApps)
                 } footer: {
-                    Text("Exports every reading with its exact time, value, unit and source. The file can be imported back into WeightMe; days already in Apple Health are skipped.")
+                    Text("Exports every reading with its exact time, value, unit and source. Importing the file into WeightMe restores every reading; readings Apple Health already has are skipped.\n\nTo back up automatically, use the Export Weight History action in the Shortcuts app with a weekly automation.")
                 }
                 Section {
                     LabeledContent("Entries", value: selected.count.formatted())

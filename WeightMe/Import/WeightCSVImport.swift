@@ -89,11 +89,14 @@ nonisolated enum WeightCSVImport {
             throw ImportParseError.unrecognizedHeader(header)
         }
         let unitCol = column { $0 == "unit" || $0 == "units" }
+        let idCol = column { $0 == "id" }
         let deletedCol = column { $0 == "deleted" }
         let updatedCol = column { $0 == "last updated" || $0 == "lastupdated" || $0 == "updated" }
         let headerUnit = unitIn(normalized[weightCol])
 
-        let format: ImportFormat = unitCol != nil ? .weightMe
+        // WeightMe's own export has a per-row unit and the Health sample ID; a plain file that merely has a
+        // Unit column is not treated as one (WeightMe files are restored reading by reading, see ImportPlan).
+        let format: ImportFormat = unitCol != nil && idCol != nil ? .weightMe
             : (deletedCol != nil || updatedCol != nil) ? .loseIt : .dateWeight
 
         let dataRows = table.dropFirst()
@@ -253,8 +256,19 @@ nonisolated struct ImportPlan: Sendable {
         var id: Int { line }
     }
 
+    /// How a row is checked against Apple Health and against the rest of the file.
+    nonisolated enum Matching: Sendable, Equatable {
+        /// One reading per calendar day: any reading already in Health that day blocks the row, and a day
+        /// that appears twice in the file keeps one row. Used for other apps' exports (Lose It has no times).
+        case byDay
+        /// One reading per moment: only a reading at the same time (to the second) blocks the row. Used for
+        /// WeightMe's own exports, so a restore brings back every reading, including several on one day.
+        case byReading
+    }
+
     var rows: [Row]
     var unit: WeightUnit
+    var matching: Matching = .byDay
 
     var toImport: [Row] { rows.filter { $0.status.isImport } }
     var importCount: Int { rows.count { $0.status.isImport } }
@@ -290,8 +304,30 @@ nonisolated struct ImportPlan: Sendable {
 
     static func build(file: ParsedImportFile, unit: WeightUnit, defaultHour: Int, defaultMinute: Int,
                       existing: [WeightEntry], calendar: Calendar = .current, now: Date = .now) -> ImportPlan {
-        var existingByDay: [Date: [Double]] = [:]
-        for e in existing { existingByDay[calendar.startOfDay(for: e.date), default: []].append(e.kg) }
+        let matching: Matching = file.format == .weightMe ? .byReading : .byDay
+
+        // Rows and Health readings are grouped by day, or by whole second when matching single readings.
+        // (WeightMe exports write whole seconds; Health keeps fractions, so a reading can land a second off.)
+        func key(_ date: Date) -> Date {
+            switch matching {
+            case .byDay: calendar.startOfDay(for: date)
+            case .byReading: Date(timeIntervalSinceReferenceDate: date.timeIntervalSinceReferenceDate.rounded(.down))
+            }
+        }
+        var existingByKey: [Date: [WeightEntry]] = [:]
+        for e in existing { existingByKey[key(e.date), default: []].append(e) }
+        func existingKg(near date: Date) -> [Double]? {
+            switch matching {
+            case .byDay:
+                return existingByKey[key(date)]?.map(\.kg)
+            case .byReading:
+                let k = key(date)
+                let matches = [k.addingTimeInterval(-1), k, k.addingTimeInterval(1)]
+                    .flatMap { existingByKey[$0] ?? [] }
+                    .filter { abs($0.date.timeIntervalSince(date)) < 1 }
+                return matches.isEmpty ? nil : matches.map(\.kg)
+            }
+        }
 
         // First pass: individual validation.
         var rows: [Row] = file.rows.map { parsed in
@@ -314,39 +350,39 @@ nonisolated struct ImportPlan: Sendable {
                 return row
             }
             guard date <= now.addingTimeInterval(60) else { row.status = .invalid("Date is in the future"); return row }
-            if let existingValues = existingByDay[calendar.startOfDay(for: date)] {
+            if let existingValues = existingKg(near: date) {
                 row.status = .existsInHealth(existingKg: existingValues)
             }
             return row
         }
 
-        // Second pass: one reading per day from the file. Keep the most recently updated row
-        // (Lose It's "Last Updated"), otherwise the first one in the file.
-        var keptByDay: [Date: Int] = [:]   // day -> index into rows
+        // Second pass: one reading per day (or per moment) from the file. Keep the most recently updated
+        // row (Lose It's "Last Updated"), otherwise the first one in the file.
+        var keptByKey: [Date: Int] = [:]   // day or second -> index into rows
         for i in rows.indices where rows[i].status.isImport {
             guard let date = rows[i].date else { continue }
-            let day = calendar.startOfDay(for: date)
-            if let keptIndex = keptByDay[day] {
+            let k = key(date)
+            if let keptIndex = keptByKey[k] {
                 let keptUpdated = file.rows[keptIndex].lastUpdated ?? .distantPast
                 let thisUpdated = file.rows[i].lastUpdated ?? .distantPast
                 if thisUpdated > keptUpdated {
                     rows[keptIndex].status = .duplicateInFile(keptLine: rows[i].line)
-                    keptByDay[day] = i
+                    keptByKey[k] = i
                 } else {
                     rows[i].status = .duplicateInFile(keptLine: rows[keptIndex].line)
                 }
             } else {
-                keptByDay[day] = i
+                keptByKey[k] = i
             }
         }
         // Re-point duplicates at the final kept row for their day.
         for i in rows.indices {
             if case .duplicateInFile = rows[i].status, let date = rows[i].date,
-               let kept = keptByDay[calendar.startOfDay(for: date)] {
+               let kept = keptByKey[key(date)] {
                 rows[i].status = .duplicateInFile(keptLine: rows[kept].line)
             }
         }
-        return ImportPlan(rows: rows, unit: unit)
+        return ImportPlan(rows: rows, unit: unit, matching: matching)
     }
 }
 

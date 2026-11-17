@@ -133,6 +133,85 @@ struct ExportRoundTripTests {
     }
 }
 
+/// Restoring a WeightMe export: every reading comes back, matched by exact time rather than by day.
+@MainActor
+struct RestoreTests {
+    let calendar = Calendar.current
+    var morning: Date { calendar.date(from: DateComponents(year: 2026, month: 3, day: 4, hour: 7, minute: 5, second: 9))! }
+
+    func entry(_ date: Date, _ kg: Double, own: Bool = true) -> WeightEntry {
+        WeightEntry(date: date, kg: kg, sourceName: own ? "WeightMe" : "Scale", sourceBundleID: own ? "me.fridman.weightme" : "com.scale", isOwn: own)
+    }
+
+    /// Three readings on one day plus one the next day, with sub-second times like Health has.
+    var sameDay: [WeightEntry] {
+        [entry(morning.addingTimeInterval(0.4), 80.1),
+         entry(morning.addingTimeInterval(3 * 3600 + 0.7), 80.6, own: false),
+         entry(morning.addingTimeInterval(12 * 3600), 81.0),
+         entry(morning.addingTimeInterval(86_400 + 0.2), 79.9)]
+    }
+
+    func plan(_ entries: [WeightEntry], existing: [WeightEntry], unit: WeightUnit = .pounds) throws -> ImportPlan {
+        let file = try WeightCSVImport.parse(CSVExport.makeCSV(entries: entries, unit: unit))
+        #expect(file.format == .weightMe)
+        return ImportPlan.build(file: file, unit: unit, defaultHour: 8, defaultMinute: 0, existing: existing,
+                                now: morning.addingTimeInterval(10 * 86_400))
+    }
+
+    @Test func restoreIntoEmptyHealthKeepsEverySameDayReading() throws {
+        let plan = try plan(sameDay, existing: [])
+        #expect(plan.matching == .byReading)
+        #expect(plan.importCount == 4)
+        #expect(plan.duplicateInFileCount == 0)
+        for (row, original) in zip(plan.toImport, sameDay) {
+            #expect(abs(try #require(row.date).timeIntervalSince(original.date)) < 1)
+            #expect(abs(try #require(row.kg) - original.kg) < 0.01)
+        }
+    }
+
+    @Test func onlyReadingsAlreadyInHealthAreSkipped() throws {
+        // Health still has the scale's reading (same moment) and an unrelated reading later that day.
+        let existing = [sameDay[1], entry(morning.addingTimeInterval(6 * 3600), 80.4, own: false)]
+        let plan = try plan(sameDay, existing: existing)
+        #expect(plan.importCount == 3)
+        #expect(plan.existingCount == 1)
+        #expect(plan.rows[1].status == .existsInHealth(existingKg: [80.6]))
+    }
+
+    @Test func restoringTwiceAddsNothing() throws {
+        let first = try plan(sameDay, existing: [])
+        // What the first restore wrote to Health: the file's whole-second times and rounded values.
+        let restored = first.toImport.map { entry($0.date!, $0.kg!) }
+        let second = try plan(sameDay, existing: restored)
+        #expect(second.importCount == 0)
+        #expect(second.existingCount == 4)
+    }
+
+    @Test func aReadingAtTheSameTimeIsBlockedEvenIfTheValueDiffers() throws {
+        // e.g. the reading was edited after the backup: never add a second, conflicting value.
+        let plan = try plan([sameDay[0]], existing: [entry(sameDay[0].date, 79.0)])
+        #expect(plan.importCount == 0)
+        #expect(plan.existingCount == 1)
+    }
+
+    @Test func aRowRepeatedInTheFileIsImportedOnce() throws {
+        let plan = try plan([sameDay[0], sameDay[0], sameDay[2]], existing: [])
+        #expect(plan.importCount == 2)
+        #expect(plan.duplicateInFileCount == 1)
+        #expect(plan.rows[1].status == .duplicateInFile(keptLine: 2))
+    }
+
+    @Test func otherFilesStillAllowOneReadingPerDay() throws {
+        // A plain file with a Unit column but no ID column is not a WeightMe export.
+        let file = try WeightCSVImport.parse("Date,Weight,Unit\n2026-03-04 07:00,180,lb\n2026-03-04 19:00,181,lb")
+        #expect(file.format == .dateWeight)
+        let plan = ImportPlan.build(file: file, unit: .pounds, defaultHour: 8, defaultMinute: 0, existing: [])
+        #expect(plan.matching == .byDay)
+        #expect(plan.importCount == 1)
+        #expect(plan.duplicateInFileCount == 1)
+    }
+}
+
 /// Files that went through Excel or Numbers before being imported.
 @MainActor
 struct SpreadsheetResaveTests {
