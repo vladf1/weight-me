@@ -115,7 +115,9 @@ struct ExportWeightHistoryIntent: AppIntent {
     }
 }
 
-extension WeightUnit: AppEnum {
+// nonisolated: the module defaults to MainActor, and App Intents needs a non-isolated conformance
+// (Xcode 26 rejects an isolated one; Xcode 27 lets it through).
+nonisolated extension WeightUnit: AppEnum {
     static let typeDisplayRepresentation: TypeDisplayRepresentation = "Unit"
     static let caseDisplayRepresentations: [WeightUnit: DisplayRepresentation] = [
         .pounds: "Pounds",
