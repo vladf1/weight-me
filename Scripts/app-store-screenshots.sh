@@ -44,7 +44,7 @@ mkdir -p "$OUT"
 DEMO=(-demo -goalKg 80)
 for name in $IPHONE $IPAD; do
   dev=$(udid "$name"); [[ -n $dev ]] || { echo "No simulator named $name" >&2; exit 1; }
-  prefix=$([[ $name == iPad* ]] && echo ipad || echo iphone)
+  prefix=$([[ $name == *iPad* ]] && echo ipad || echo iphone)
   echo "$name ($dev)"
   boot $dev; pin_status_bar $dev
   xcrun simctl install $dev $APP
