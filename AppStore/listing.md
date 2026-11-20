@@ -11,8 +11,9 @@ Source of truth for what's entered in App Store Connect (app id 6832146393). Scr
 | Subtitle (≤30) | Weight log & trend for Health |
 | Primary category | Health & Fitness |
 | Content rights | No third-party content |
-| Age rating | 4+ (every questionnaire answer "None"/"No") |
-| Price | Free, all countries and regions |
+| Regulated medical device | No (App Compliance) |
+| Age rating | 9+ (172 regions; 12+ Vietnam, A10 Brazil, ALL Korea). Every answer "None"/"No" (Location Sharing and Dating included) except Health or Wellness Topics: Yes |
+| Price | Free, all countries and regions except China mainland (needs a Security Assessment and AIGC filing) |
 | Privacy policy URL | https://github.com/vladf1/weight-me/blob/main/PRIVACY.md |
 | App privacy | Data Not Collected |
 | Support URL | https://github.com/vladf1/weight-me/issues |
@@ -34,7 +35,7 @@ LOG FAST
 
 SEE THE TREND, NOT THE NOISE
 • 7-, 30- and 90-day averages and a smoothed trend line, as in The Hacker's Diet
-• Ranges from a week to all time
+• Ranges from a month to all time
 • Lowest, highest, average, change and weekly rate for any range
 • Set a goal and see when you'd reach it at your current pace
 
@@ -45,7 +46,7 @@ YOUR DATA STAYS YOURS
 
 BRING YOUR HISTORY
 • Import a CSV from Lose It! or another app, with a full review before anything is written and one-tap undo
-• Export everything to CSV any time
+• Export everything to CSV any time, or on a schedule with the "Export Weight History" action in Shortcuts
 
 ## Keywords (≤100, comma-separated)
 
